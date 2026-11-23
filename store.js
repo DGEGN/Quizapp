@@ -50,6 +50,8 @@ export async function createStore(cfg) {
 }
 
 /* ---------- Lokaler Modus ---------- */
+export async function createLocalStore(cfg) { return localStore(cfg); }
+
 async function localStore(cfg) {
   let data = null;
   try {

@@ -19,6 +19,22 @@
   <div class="row"><button class="btn" id="loginCancel" type="button">Abbrechen</button><button class="btn primary" id="loginOk" type="button">Anmelden</button></div>
 </dialog>
 <input type="file" id="fileIn" accept=".json,application/json" hidden>
+<script>
+/* Wächter: zeigt einen Fehler an, falls die App nicht startet */
+(function () {
+  var shown = false;
+  function show(msg) {
+    var a = document.getElementById("app");
+    if (shown || !a || a.textContent.indexOf("Lade Quizwelt") === -1) return;
+    shown = true;
+    a.innerHTML = '<div style="max-width:640px;margin:40px auto;padding:0 20px;font:17px/1.5 system-ui,sans-serif;color:#fff"><h2>Die Seite konnte nicht starten</h2><p id="gmsg"></p><p>Tipp: Mit Strg+F5 neu laden. Öffne mit F12 die Konsole, dort steht der genaue Fehler.</p></div>';
+    document.getElementById("gmsg").textContent = msg;
+  }
+  window.addEventListener("error", function (e) { show("Fehler: " + (e.message || "unbekannt") + (e.filename ? " (" + e.filename.split("/").pop() + ":" + e.lineno + ")" : "")); });
+  window.addEventListener("unhandledrejection", function (e) { show("Fehler: " + ((e.reason && e.reason.message) || e.reason)); });
+  setTimeout(function () { show("Das Laden dauert ungewöhnlich lange oder eine Datei fehlt (app.js, store.js, firebase-config.js)."); }, 25000);
+})();
+</script>
 <script type="module" src="app.js"></script>
 </body>
 </html>
