@@ -1,4 +1,4 @@
-import { createStore, fetchSeed } from "./store.js";
+import { createStore, createLocalStore, fetchSeed } from "./store.js";
 import CONFIG from "./firebase-config.js";
 
 /* ---------- Hilfen ---------- */
@@ -66,13 +66,24 @@ function findQ(id) { return S.quiz.questions.find(q => q.id === id) || null; }
 function catName(quiz, id) { const c = quiz.categories.find(x => x.id === id); return c ? c.name : ""; }
 function lvlPts(q) { return S.quiz.levels[q.lvl - 1].points; }
 
+function withTimeout(p, ms, msg) {
+  let id;
+  const t = new Promise((_, rej) => { id = setTimeout(() => rej(new Error(msg)), ms); });
+  return Promise.race([p, t]).finally(() => clearTimeout(id));
+}
+function explainError(e) {
+  const code = e && e.code ? String(e.code) : "";
+  if (/permission-denied/.test(code)) return "Keine Leseberechtigung. Bitte die Firestore-Regeln prüfen und veröffentlichen.";
+  if (/unavailable|failed-precondition|not-found/.test(code)) return "Firestore ist nicht erreichbar. Wurde die Datenbank in der Firebase-Konsole angelegt?";
+  return (e && e.message) ? e.message : String(e);
+}
 async function loadAll() {
   try {
-    const list = await S.store.list();
+    const list = await withTimeout(S.store.list(), 12000, "Zeitüberschreitung: Firestore antwortet nicht. Ist die Datenbank angelegt, und sind die Regeln veröffentlicht?");
     S.quizzes = list.map(normQuiz).sort((a, b) => a.sort - b.sort || a.title.localeCompare(b.title));
     S.loadErr = "";
   } catch (e) {
-    S.loadErr = "Die Quizze konnten nicht geladen werden: " + (e && e.message ? e.message : e);
+    S.loadErr = "Die Quizze konnten nicht geladen werden: " + explainError(e);
   }
 }
 
@@ -338,7 +349,7 @@ function playView() {
     ans += '<button class="' + k.join(" ") + '" data-a="pick" data-i="' + i + '" ' + ((busy || gone || wasWrong) ? "disabled" : "") + '><span class="l">' + LETTERS[i] + '</span><span>' + esc(o.t) + '</span></button>';
   });
   let aux = "";
-  if (c.hint) aux += '<div class="panel"><h3>Tipp vom Kapitän</h3><p style="margin:0">' + esc(c.hint) + '</p></div>';
+  if (c.hint) aux += '<div class="panel"><h3>Tipp</h3><p style="margin:0">' + esc(c.hint) + '</p></div>';
   if (c.phase === "confirm") aux += '<div class="confirm"><strong>' + esc(actorTeam().name) + ': Ist ' + LETTERS[c.sel] + ' eure endgültige Antwort?</strong><button class="btn" data-a="back">Andere wählen</button><button class="btn primary" id="btnLock" data-a="lock">Endgültig</button></div>';
   if (c.phase === "reveal") {
     const o = c.outcome, good = o.team > -1, right = c.opts.find(x => x.ok).t;
@@ -348,7 +359,7 @@ function playView() {
       '<div><button class="btn primary" id="btnNext" data-a="next">Zurück zum Spielbrett</button></div></div>';
   }
   const t = actorTeam(), canJ = c.phase === "choose";
-  const tools = '<div class="tools"><button class="btn sm" data-a="j" data-k="tip" ' + ((!canJ || t.tip) ? "disabled" : "") + '>Kapitänstipp</button>' +
+  const tools = '<div class="tools"><button class="btn sm" data-a="j" data-k="tip" ' + ((!canJ || t.tip) ? "disabled" : "") + '>Tipp</button>' +
     '<button class="btn sm" data-a="j" data-k="half" ' + ((!canJ || t.half || wrongLeft() < 2) ? "disabled" : "") + '>50:50</button><span class="spacer"></span>' +
     '<button class="btn sm warn" data-a="cancel" ' + ((c.phase === "choose" && !c.steal) ? "" : "disabled") + '>Frage zurücklegen</button></div>';
   const stealMsg = (c.steal && c.phase !== "reveal") ? '<div class="steal">Klau-Chance für ' + esc(actorTeam().name) + ': nur halbe Punkte (' + fmt(curPts()) + '), die falsche Antwort ist raus.</div>' : "";
@@ -387,7 +398,7 @@ function edCard(q, d) {
     '<label class="right">Richtige Antwort<input type="text" ' + f("o0") + ' value="' + esc(q.o[0]) + '"></label>' +
     '<div class="row wrong">' + [1, 2, 3].map(i => '<label>Falsche Antwort ' + i + (i === 3 ? " (optional)" : "") + '<input type="text" ' + f("o" + i) + ' value="' + esc(q.o[i]) + '"></label>').join("") + '</div>' +
     '<label>Erklärung nach der Antwort<textarea ' + f("why") + ' rows="3">' + esc(q.why) + '</textarea></label>' +
-    '<label>Tipp vom Kapitän<input type="text" ' + f("hint") + ' value="' + esc(q.hint) + '"></label>' +
+    '<label>Tipp<input type="text" ' + f("hint") + ' value="' + esc(q.hint) + '"></label>' +
     '<div class="row"><label>Kategorie' + sel1 + '</label><label>Stufe' + sel2 + '</label><label class="chk"><input type="checkbox" ' + f("check") + (q.check ? " checked" : "") + '> Vermerk „Unterlage prüfen“ anzeigen</label></div>' +
     '<div class="acts"><button class="btn sm warn" data-a="delq" data-id="' + q.id + '">Frage löschen</button></div></div></details>';
 }
@@ -608,13 +619,17 @@ document.addEventListener("keydown", (e) => {
 /* ---------- Start ---------- */
 (async function init() {
   try {
-    S.store = await createStore(CONFIG);
+    S.store = await withTimeout(createStore(CONFIG), 20000, "Zeitüberschreitung beim Laden von Firebase.");
+  } catch (e) {
+    S.store = await createLocalStore(CONFIG);
+    S.store.notice = "Firebase konnte nicht gestartet werden (" + explainError(e) + "). Die Seite läuft im lokalen Modus.";
+  }
+  try {
     S.admin = S.store.isAdmin();
     S.store.onAuth((v) => { S.admin = v; render(); });
     await loadAll();
   } catch (e) {
-    S.loadErr = "Start fehlgeschlagen: " + (e && e.message ? e.message : e);
-    S.store = S.store || { mode: "local", notice: "", isAdmin: () => false, login: async () => { throw new Error("Nicht verfügbar."); }, logout: async () => {}, onAuth() {} };
+    S.loadErr = "Start fehlgeschlagen: " + explainError(e);
   }
   S.loading = false;
   route();
