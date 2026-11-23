@@ -333,7 +333,7 @@ function boardView() {
   return topbar() + '<div class="wrap">' + scoreView() +
     '<div class="boardhead"><h2>' + (S.teams.length === 2 ? esc(t.name) + ', wählt eine Frage' : 'Wähle eine Frage') + '</h2><span class="info">' + left + ' von ' + total + ' Fragen offen</span><span style="flex:1"></span>' +
     '<button class="btn sm" data-a="rnd">Zufällige Frage</button><button class="btn sm warn" data-a="endgame">Spiel beenden</button></div>' +
-    '<div class="board" style="--cols:' + qz.categories.length + '">' + cols + '</div></div>';
+    '<div class="board"' + (qz.categories.length >= 7 ? ' data-d="x"' : qz.categories.length >= 5 ? ' data-d="d"' : '') + ' style="--cols:' + qz.categories.length + '">' + cols + '</div></div>';
 }
 function playView() {
   const c = S.cur, q = c.q, qz = S.quiz;
