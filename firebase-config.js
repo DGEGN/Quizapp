@@ -20,7 +20,7 @@ export default {
   // E-Mail-Adresse des Bearbeiter-Kontos, das du in Firebase unter Authentication > Nutzer angelegt hast.
   // Im Bearbeiten-Modus gibst du dann nur das Passwort dieses Kontos ein. Solange das Feld leer ist,
   // läuft die Seite im lokalen Modus.
-  adminEmail: "",
+  adminEmail: "pascal_leon_schneider@web.de",
 
   // Nur für den lokalen Modus: SHA-256 des Passworts. Voreingestellt ist "quizwelt".
   adminPasswordSha256: "df9270d84c507c0e550ac253e0a935d66e663965df037fc37200a33e11b16b09"
