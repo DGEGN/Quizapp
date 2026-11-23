@@ -10,11 +10,13 @@ export default {
   // Firebase (optional). Die Werte findest du in der Firebase-Konsole unter
   // Projekteinstellungen > Allgemein > Meine Apps > SDK-Konfiguration.
   firebase: {
-    apiKey: "",
-    authDomain: "",
-    projectId: "",
-    appId: ""
-  },
+  apiKey: "AIzaSyChY-tmV2kjg9mRqLCcXYWXIHdDMnWr4GA",
+  authDomain: "quizplatform-db-fernverkehr.firebaseapp.com",
+  projectId: "quizplatform-db-fernverkehr",
+  storageBucket: "quizplatform-db-fernverkehr.firebasestorage.app",
+  messagingSenderId: "644801430379",
+  appId: "1:644801430379:web:c1ebf2dc37ae2af5a5822e"
+};
 
   // Firebase-Modus: E-Mail-Adresse des Bearbeiter-Kontos. Im Bearbeiten-Modus gibst du nur das Passwort ein.
   adminEmail: "",
