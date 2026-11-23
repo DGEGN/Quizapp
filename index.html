@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quizwelt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app" id="app"><p style="padding:40px;text-align:center">Lade Quizwelt …</p></div>
+<dialog id="dlg"><p id="dlgMsg"></p><div class="row" id="dlgBtns"></div></dialog>
+<dialog id="login">
+  <p>Passwort für den Bearbeiten-Modus</p>
+  <input id="loginPw" type="password" autocomplete="current-password" aria-label="Passwort">
+  <p class="err" id="loginMsg" role="alert"></p>
+  <div class="row"><button class="btn" id="loginCancel" type="button">Abbrechen</button><button class="btn primary" id="loginOk" type="button">Anmelden</button></div>
+</dialog>
+<input type="file" id="fileIn" accept=".json,application/json" hidden>
+<script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Quizze darf jeder lesen, schreiben darf nur das Bearbeiter-Konto.
+    // Ersetze die Adresse durch die E-Mail, die du in firebase-config.js als adminEmail einträgst.
+    match /quizzes/{quizId} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && request.auth.token.email == "DEINE-ADMIN-MAIL@example.com";
+    }
+  }
+}

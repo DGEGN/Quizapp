@@ -1,0 +1,422 @@
+[
+ {
+  "id": "br408",
+  "sort": 1,
+  "title": "Wer weiß denn | die BR 408?",
+  "subtitle": "Die Wissensshow zur BR 408",
+  "color": "#FFC933",
+  "categories": [
+   {
+    "id": "A",
+    "name": "Energie & Hochspannung"
+   },
+   {
+    "id": "B",
+    "name": "Traktion & Antrieb"
+   },
+   {
+    "id": "C",
+    "name": "Bremse & Laufwerk"
+   },
+   {
+    "id": "D",
+    "name": "Zugsteuerung & Leittechnik"
+   }
+  ],
+  "levels": [
+   {
+    "name": "Grundlagen",
+    "points": 100
+   },
+   {
+    "name": "Systemverständnis",
+    "points": 200
+   },
+   {
+    "name": "Vertiefung",
+    "points": 300
+   },
+   {
+    "name": "Experten",
+    "points": 500
+   }
+  ],
+  "questions": [
+   {
+    "id": 1,
+    "cat": "A",
+    "lvl": 2,
+    "q": "Warum wird die Anpresskraft des Stromabnehmers geschwindigkeitsabhängig gesteuert?",
+    "o": [
+     "Damit bei wechselnder Aerodynamik die Stromabnahme sicher und verschleißarm bleibt: zu wenig Kraft gibt Lichtbögen, zu viel Verschleiß.",
+     "Damit der Stromabnehmer bei hoher Geschwindigkeit nicht abhebt. Zu viel Anpressdruck ist unproblematisch.",
+     "Damit die Fahrdrahtspannung konstant bleibt.",
+     "Damit der Stromabnehmer bei jedem Halt automatisch abgesenkt wird."
+    ],
+    "why": "Der Stromabnehmer soll nicht nur Kontakt halten, sondern eine stabile, funkenarme und verschleißarme Stromübertragung sichern. Bei hoher Geschwindigkeit wirken größere aerodynamische Kräfte. Zu geringe Kraft führt zu Kontaktunterbrechungen und Lichtbögen, zu hohe Kraft erhöht den Verschleiß an Schleifleiste und Fahrdraht.",
+    "hint": "Zu wenig Druck bringt Funken, zu viel bringt Verschleiß. Was ändert sich mit der Geschwindigkeit?",
+    "check": false
+   },
+   {
+    "id": 2,
+    "cat": "A",
+    "lvl": 4,
+    "q": "Warum besitzt die BR 408 mehrere Stromabnehmerbauarten mit unterschiedlichen Wippenlängen?",
+    "o": [
+     "Weil sie als Mehrsystemfahrzeug in Netzen mit unterschiedlicher Spannung, Oberleitungsgeometrie und nationalen Vorgaben fährt.",
+     "Nur aus Redundanzgründen. Die Bauarten unterscheiden sich nicht nach Netz oder Land.",
+     "Weil die Wippenlänge von der Zuglänge abhängt.",
+     "Weil sich die Stromabnehmer nur in ihrer Farbe unterscheiden."
+    ],
+    "why": "Wechsel- und Gleichstromnetze erfordern unterschiedliche Stromabnehmer. Fahrdrahtlage, Oberleitungsbauart und zulässige Schleifleistenbreite unterscheiden sich je Land. Eine falsche Wippenbreite kann zu unzulässigem Kontakt, Beschädigung oder schlechter Stromabnahme führen.",
+    "hint": "Andere Länder haben andere Oberleitungen und Vorgaben.",
+    "check": true
+   },
+   {
+    "id": 3,
+    "cat": "A",
+    "lvl": 1,
+    "q": "Wozu dient die automatische Senkeinrichtung am Stromabnehmer?",
+    "o": [
+     "Sie senkt einen beschädigten Stromabnehmer selbsttätig und schützt so Fahrdraht, Oberleitung und nachfolgende Züge.",
+     "Sie senkt einen beschädigten Stromabnehmer selbsttätig, schützt aber nur den Stromabnehmer selbst.",
+     "Sie senkt den Stromabnehmer bei jedem Netzwechsel, um die Spannung umzuschalten.",
+     "Sie senkt den Fahrdraht ab, sobald der Zug zu schnell fährt."
+    ],
+    "why": "Die Senkeinrichtung überwacht Schleifleiste und Stromabnehmerkopf. Bei einem Schaden senkt sie den Stromabnehmer selbsttätig, damit er nicht weiter an der Oberleitung entlangläuft und sie aufreißt oder weitere Fahrzeugteile beschädigt.",
+    "hint": "Denke an eine gebrochene Schleifleiste, die bei hoher Geschwindigkeit am Fahrdraht entlangschleift.",
+    "check": false
+   },
+   {
+    "id": 4,
+    "cat": "A",
+    "lvl": 2,
+    "q": "Welche zwei Aufgaben hat der Hauptschalter?",
+    "o": [
+     "Er schaltet die Hochspannung ein und aus und trennt bei Fehlern schnell ab. Damit ist er Teil der Schutzkette.",
+     "Er schaltet die Hochspannung ein und aus. Eine Schutzfunktion hat er nicht.",
+     "Er wandelt die Fahrdrahtspannung in die Motorspannung um.",
+     "Er regelt die Drehzahl der Fahrmotoren."
+    ],
+    "why": "Der Hauptschalter verbindet oder trennt die Hochspannungsausrüstung von der Fahrleitung. Bei Kurzschluss, Überstrom oder Fehlern in der Hochspannungsausrüstung muss er schnell ausschalten. Die Leittechnik prüft vorher mehrere Einschaltbedingungen.",
+    "hint": "Er ist Schalter und Schutzorgan zugleich.",
+    "check": false
+   },
+   {
+    "id": 5,
+    "cat": "A",
+    "lvl": 3,
+    "q": "Warum braucht der Gleichstromhauptschalter eine magnetische Blasung, der Vakuumhauptschalter für Wechselstrom aber nicht?",
+    "o": [
+     "Wechselstrom hat einen Stromnulldurchgang, im Vakuum löscht der Lichtbogen schnell. Gleichstrom hat keinen Nulldurchgang, der Lichtbogen muss gelenkt und gelöscht werden.",
+     "Im Vakuum löscht der Lichtbogen immer schnell, auch bei Gleichstrom. Die Blasung ist nur eine Reserve.",
+     "Gleichstrom hat einen Nulldurchgang, Wechselstrom nicht. Deshalb braucht Wechselstrom die Blasung.",
+     "Beide Schalter löschen den Lichtbogen in einem Ölbad, die Blasung kühlt nur das Öl."
+    ],
+    "why": "Im Vakuum gibt es kaum ionisierbares Gas, ein Lichtbogen verlöscht beim Nulldurchgang sehr schnell. Gleichstrom hat keinen natürlichen Nulldurchgang, der Lichtbogen kann länger bestehen. Die magnetische Blasung lenkt und verlängert ihn, bis er in der Lichtbogenkammer sicher gelöscht wird.",
+    "hint": "Welcher Strom hat einen natürlichen Nulldurchgang?",
+    "check": false
+   },
+   {
+    "id": 6,
+    "cat": "A",
+    "lvl": 2,
+    "q": "Wie unterscheidet der Buchholzschutz zwischen einem schleichenden und einem schweren Transformatorfehler?",
+    "o": [
+     "Schleichend: Gasbildung im Öl löst eine Warnung aus. Schwer: schnelle Ölströmung löst sofortige Abschaltung aus.",
+     "Er erkennt nur Gasbildung. Schwere Fehler erkennt ein anderes Schutzsystem.",
+     "Er misst die Temperatur der Primärwicklung und schaltet bei einem festen Grenzwert ab.",
+     "Er vergleicht die Drehzahlen der Radsätze."
+    ],
+    "why": "Der Buchholzschutz überwacht ölgekühlte Transformatoren. Bei einem schleichenden inneren Fehler entstehen Gase, die sich im Relais sammeln und zunächst warnen. Bei einem schweren Fehler entsteht eine schnelle Ölströmung, die sofort abschaltet.",
+    "hint": "Gas sammelt sich langsam, Öl strömt schlagartig.",
+    "check": false
+   },
+   {
+    "id": 7,
+    "cat": "A",
+    "lvl": 1,
+    "q": "Warum muss der Rückstrom über Raderdekontakte und nicht über die Radsatzlager fließen?",
+    "o": [
+     "Weil Radsatzlager nicht für Traktionsrückstrom ausgelegt sind und beschädigt werden können.",
+     "Weil Radsatzlager den Strom verstärken würden.",
+     "Weil Raderdekontakte nur für die Zugbeeinflussung benötigt werden.",
+     "Weil der Rückstrom sonst in den Transformator zurückfließen würde."
+    ],
+    "why": "Raderdekontakte führen den Rückstrom gezielt über Rad und Schiene ab. Fließt Strom über Radsatzlager, können Funken, punktuelle Erwärmung und elektrische Erosion die Lagerlaufbahnen beschädigen.",
+    "hint": "Denke an den Unterschied zwischen mechanischem Lagerbauteil und definierter elektrischer Rückstromführung.",
+    "check": false
+   },
+   {
+    "id": 8,
+    "cat": "B",
+    "lvl": 3,
+    "q": "Wie arbeitet der Traktionsstromrichter im Wechselstrombetrieb beim Fahren und beim Bremsen?",
+    "o": [
+     "Fahren: Vierquadrantensteller, Zwischenkreis und Pulswechselrichter erzeugen Drehstrom für die Motoren. Bremsen: Der Energiefluss kehrt sich um, Rückspeisung oder Bremswiderstand.",
+     "Fahren wie beschrieben, beim Bremsen ist aber kein Energiefluss zurück zum Zwischenkreis möglich.",
+     "Der Stromrichter wandelt Drehstrom aus dem Netz direkt in Gleichstrom für die Motoren.",
+     "Der Saugkreis speichert Bremsenergie und gibt sie später an die Heizung ab."
+    ],
+    "why": "Der Vierquadrantensteller wandelt einphasige Wechselspannung in geregelte Gleichspannung im Zwischenkreis, in beide Energierichtungen. Der Zwischenkreis speichert und glättet. Der Pulswechselrichter erzeugt Drehstrom variabler Spannung und Frequenz. Beim Bremsen arbeiten die Motoren als Generator, die Energie geht ins Netz oder in Bremswiderstände.",
+    "hint": "Beim Bremsen dreht sich der Energiefluss um.",
+    "check": false
+   },
+   {
+    "id": 9,
+    "cat": "B",
+    "lvl": 1,
+    "q": "Wie werden beim Drehstrom-Asynchronmotor Drehzahl und Drehrichtung beeinflusst?",
+    "o": [
+     "Die Drehzahl folgt der Frequenz des Drehfelds, die Drehrichtung ändert sich über die Phasenfolge.",
+     "Die Drehzahl folgt der Frequenz des Drehfelds, die Drehrichtung wird über ein mechanisches Wendegetriebe umgeschaltet.",
+     "Die Drehzahl wird allein über die Spannung geregelt, die Drehrichtung über die Phasenfolge.",
+     "Die Drehzahl hängt von der Zahl der Stromabnehmer ab, die Drehrichtung von der Fahrdrahtpolarität."
+    ],
+    "why": "Beim Asynchronmotor bestimmt die Frequenz des Drehfelds die Drehzahl. Der Wechselrichter führt die Spannung passend zur Frequenz mit, damit der magnetische Fluss im zulässigen Bereich bleibt. Tauscht man die Phasenfolge, dreht das Drehfeld in die Gegenrichtung.",
+    "hint": "Was ändert sich, wenn im Drehstromsystem zwei Phasen getauscht werden?",
+    "check": false
+   },
+   {
+    "id": 10,
+    "cat": "B",
+    "lvl": 2,
+    "q": "Welche Aussage zum Schlupf beim Drehstromfahrzeug stimmt?",
+    "o": [
+     "Schlupf ist für das Drehmoment nötig. Bei schlechter Haftung reduziert die schnelle Regelung das Moment, statt dass die Räder unkontrolliert hochdrehen.",
+     "Schlupf ist ein Fehler, den die Regelung stets auf null hält.",
+     "Drehstromfahrzeuge können den Haftwert nie überschreiten.",
+     "Bei Schlupf erhöht die Steuerung das Drehmoment, um den Haftwert zu durchbrechen."
+    ],
+    "why": "Beim Asynchronmotor entsteht Drehmoment nur mit Schlupf. Die Antriebssteuerung erkennt zu viel Schlupf an einem Radsatz und reduziert das Drehmoment. Bei schlüpfriger Schiene kann die Haftung trotzdem überschritten werden, dann sinkt die verfügbare Zugkraft.",
+    "hint": "Ohne Schlupf entsteht beim Asynchronmotor kein Drehmoment.",
+    "check": false
+   },
+   {
+    "id": 11,
+    "cat": "B",
+    "lvl": 4,
+    "q": "Was gilt laut Unterlage für die 75-Hz-Baugruppe und den Störschalter „SSÜ 75 Hz“?",
+    "o": [
+     "Die 75-Hz-Baugruppe ist eine zusätzliche Baugruppe der Antriebssteuergeräte für eine netzbezogene Überwachung. Der Störschalter ermöglicht bei Störung dieser Überwachung eine definierte Störfallbehandlung.",
+     "Die 75-Hz-Baugruppe überwacht die Raddrehzahl. Der Störschalter schaltet die Gleitschutzeinrichtung ab.",
+     "Die 75-Hz-Baugruppe gehört zur Klimaanlage. Der Störschalter regelt die Innentemperatur.",
+     "Die 75-Hz-Baugruppe ist ein Teil der Fahrgastinformation."
+    ],
+    "why": "Die Baugruppe ist eine zusätzliche Baugruppe der Antriebssteuergeräte und wird für bestimmte Infrastrukturanforderungen benötigt. Der Störschalter ermöglicht bei einer Störung der Überwachungsfunktion eine definierte Störfallbehandlung. Netzzuordnung und genaue Wirkung sind im Dokument nicht gesichert und müssen aus der BR-408-Unterlage übernommen werden.",
+    "hint": "Es geht um eine zusätzliche, netzbezogene Überwachung in der Antriebssteuerung.",
+    "check": true
+   },
+   {
+    "id": 12,
+    "cat": "B",
+    "lvl": 1,
+    "q": "Was unterscheidet Nutzbremse und Widerstandsbremse?",
+    "o": [
+     "Die Nutzbremse speist Bremsenergie ins Netz zurück, die Widerstandsbremse wandelt sie in Wärme um.",
+     "Die Nutzbremse wandelt Bremsenergie in Wärme um, die Widerstandsbremse speist sie ins Netz zurück.",
+     "Bei der Widerstandsbremse arbeiten die Fahrmotoren nicht als Generator, bei der Nutzbremse schon.",
+     "Beide pressen Bremsbeläge gegen die Bremsscheibe, nur die Kühlung unterscheidet sich."
+    ],
+    "why": "Bei beiden Bremsen arbeiten die Fahrmotoren als Generatoren. Die Nutzbremse führt die Energie über den Traktionsstromrichter zurück ins Netz, die Widerstandsbremse setzt sie in Bremswiderständen in Wärme um, zum Beispiel wenn das Netz keine Rückspeisung zulässt.",
+    "hint": "Wohin geht die Energie, wenn das Netz sie nicht aufnehmen kann?",
+    "check": false
+   },
+   {
+    "id": 13,
+    "cat": "C",
+    "lvl": 2,
+    "q": "Wie unterscheiden sich Magnetschienenbremse und lineare Wirbelstrombremse?",
+    "o": [
+     "Die Magnetschienenbremse wirkt über Magnetkraft an der Schiene. Die Wirbelstrombremse wirkt berührungslos über induzierte Ströme und ist verschleißfrei.",
+     "Die Magnetschienenbremse wirkt berührungslos, die Wirbelstrombremse liegt mit Reibkontakt auf der Schiene.",
+     "Beide wirken nur über die Rad-Schiene-Haftung.",
+     "Beide arbeiten mit Bremszylindern an der Radbremsscheibe."
+    ],
+    "why": "Die Magnetschienenbremse erzeugt Bremskraft direkt zwischen Fahrzeug und Schiene, weitgehend unabhängig vom Haftwert. Die Wirbelstrombremse erzeugt ein Magnetfeld, das in der Schiene Wirbelströme induziert, deren Gegenfeld bremst. Das geschieht ohne mechanischen Kontakt, aber mit Wärme in der Schiene.",
+    "hint": "Eine der beiden Bremsen berührt die Schiene, die andere nicht.",
+    "check": false
+   },
+   {
+    "id": 14,
+    "cat": "C",
+    "lvl": 3,
+    "q": "Wozu dient die Transitionsüberwachung beim Wechsel zwischen Netzen oder Betriebsarten?",
+    "o": [
+     "Sie stellt sicher, dass nach dem Wechsel die richtige Konfiguration aktiv ist, zum Beispiel die Wirbelstrombremse nur dort freigegeben, wo sie zugelassen ist.",
+     "Sie schaltet nach einem Wechsel nur die Fahrgastinformation um.",
+     "Sie misst die Fahrdrahtspannung für die Abrechnung.",
+     "Sie bremst den Zug an jeder Grenze auf Stillstand."
+    ],
+    "why": "Die Wirbelstrombremse kann Schiene thermisch belasten und Gleisfreimeldeanlagen, Weichen oder Signalanlagen beeinflussen. Deshalb darf sie nur dort genutzt werden, wo die Infrastruktur sie zulässt. Die Transitionsüberwachung prüft nach dem Systemwechsel, ob solche Funktionen passend freigegeben oder gesperrt sind.",
+    "hint": "Nach dem Netzwechsel muss alles zur Infrastruktur passen.",
+    "check": true
+   },
+   {
+    "id": 15,
+    "cat": "C",
+    "lvl": 2,
+    "q": "Wie arbeitet die Federspeicherbremse, und was passiert bei Druckluftverlust?",
+    "o": [
+     "Die Feder erzeugt die Bremskraft, Druckluft löst sie. Bei Luftverlust legt die Bremse an.",
+     "Druckluft legt die Bremse an, die Feder löst sie. Bei Luftverlust löst die Bremse.",
+     "Die Feder erzeugt die Bremskraft, zum Lösen wird Batteriestrom benötigt. Luftverlust hat keinen Einfluss.",
+     "Sie wirkt nur als Betriebsbremse während der Fahrt und wird nie zum Festhalten genutzt."
+    ],
+    "why": "Die Federspeicherbremse ist eine Feststellbremse. Druckluft wirkt gegen die Federkraft und löst sie. Die Schlauchbruchüberwachung erkennt Druckverlust, bei dem das System in den sicheren Zustand geht: Die Bremse legt an oder bleibt angelegt.",
+    "hint": "Was soll passieren, wenn die Druckluft komplett wegfällt?",
+    "check": false
+   },
+   {
+    "id": 16,
+    "cat": "C",
+    "lvl": 2,
+    "q": "Wie arbeitet die elektronische Gleitschutzeinrichtung?",
+    "o": [
+     "Sie erkennt über Drehzahlsensoren gleitende Radsätze und senkt den Bremszylinderdruck radsatzselektiv, bis der Radsatz wieder rollt.",
+     "Sie erkennt gleitende Radsätze und senkt den Bremsdruck für den ganzen Zug gleichzeitig.",
+     "Sie erhöht den Bremsdruck am gleitenden Radsatz, um ihn stärker zu verzögern.",
+     "Sie schaltet die Bremse bei Gleiten komplett ab und löst erst nach dem Halt wieder."
+    ],
+    "why": "Die Sensoren überwachen die Drehzahl jedes Radsatzes. Droht einer zu gleiten, wird sein Bremsdruck reduziert und später wieder aufgebaut. Die Regelung ist radsatzselektiv, weil die Haftbedingungen nicht überall gleich sind. So bleibt die Bremskraft möglichst hoch, ohne Flachstellen zu erzeugen.",
+    "hint": "Jeder Radsatz hat seinen eigenen Drehzahlsensor.",
+    "check": false
+   },
+   {
+    "id": 17,
+    "cat": "C",
+    "lvl": 1,
+    "q": "Wie entstehen Flachstellen am Rad, und was bewirken sie?",
+    "o": [
+     "Ein Rad blockiert beim Bremsen und gleitet über die Schiene. Die Schadstelle belastet Schiene, Radsatz und Lager mit Stößen.",
+     "Ein Rad blockiert beim Bremsen und gleitet über die Schiene. Die Schadstelle beeinträchtigt aber nur den Fahrkomfort.",
+     "Sie entstehen durch zu hohe Geschwindigkeit in Kurven und verschleißen nur den Spurkranz.",
+     "Sie entstehen durch Funkenüberschlag am Stromabnehmer und betreffen nur die Oberleitung."
+    ],
+    "why": "Flachstellen entstehen, wenn ein Rad beim Bremsen blockiert und gleitet. Bei jeder Umdrehung schlägt die Schadstelle auf die Schiene. Das belastet Schiene, Radsatz und Radsatzlager und erhöht Laufunruhe und Geräusche. Schwere Flachstellen müssen instandgesetzt werden.",
+    "hint": "Was passiert mit einem Rad, das steht, während der Zug noch rollt?",
+    "check": false
+   },
+   {
+    "id": 18,
+    "cat": "C",
+    "lvl": 4,
+    "q": "Welche Aufgaben haben Primär- und Sekundärfederung im Drehgestell, und welche allgemeinen Folgen hat ein Luftfederausfall?",
+    "o": [
+     "Primär: zwischen Radsatz und Drehgestellrahmen. Sekundär (Luftfeder): zwischen Drehgestell und Wagenkasten. Bei Ausfall senkt sich der Wagenkasten, Höhe und Fahrverhalten ändern sich.",
+     "Primär: zwischen Drehgestell und Wagenkasten. Sekundär: zwischen Radsatz und Drehgestellrahmen. Bei Ausfall senkt sich der Wagenkasten.",
+     "Beide Federstufen sitzen zwischen Radsatz und Drehgestell. Ein Luftfederausfall hat keine Folgen.",
+     "Die Sekundärfederung sitzt im Stromabnehmer. Bei Ausfall hebt sich der Wagenkasten an."
+    ],
+    "why": "Die Primärfederung dämpft Stöße aus dem Rad-Schiene-Kontakt und führt den Radsatz. Die Sekundärfederung ist bei Triebzügen meist als Luftfederung ausgeführt, trägt den Wagenkasten und hält die Fahrzeughöhe. Fällt sie aus, sinkt der Wagenkasten ab oder wird über Notfederelemente abgestützt. Konkrete Bremsfolgen nur laut Fahrzeugunterlage nennen.",
+    "hint": "Primär sitzt direkt am Radsatz, sekundär trägt den Wagenkasten.",
+    "check": true
+   },
+   {
+    "id": 19,
+    "cat": "D",
+    "lvl": 3,
+    "q": "Welche Aufgabe haben die unterflur angeordneten Antennen und Aufnehmer der Zugbeeinflussung?",
+    "o": [
+     "Sie nehmen Streckeninformationen auf und erfassen Fahrzeugbewegungen. Beispiele: ETCS-Balisenantenne, Radar, ATB-Antenne, Memor-Bürste.",
+     "Sie unterstützen nur ETCS. Nationale Systeme werden von der BR 408 nicht genutzt.",
+     "Sie sind Funkantennen für die Fahrgast-WLAN-Verbindung.",
+     "Sie zählen die Radumdrehungen für die Wartungsplanung."
+    ],
+    "why": "Die BR 408 ist für den grenzüberschreitenden Verkehr ausgerüstet und besitzt je nach Zulassung europäische und nationale Zugbeeinflussungssysteme. Die Komponenten nehmen Informationen aus der Strecke auf, erfassen Weg und Geschwindigkeit und versorgen die Zugbeeinflussung mit sicheren Eingangsgrößen.",
+    "hint": "Mehrere Länder, mehrere Systeme, mehrere Aufnehmer unter dem Fahrzeug.",
+    "check": true
+   },
+   {
+    "id": 20,
+    "cat": "D",
+    "lvl": 2,
+    "q": "Wozu dient der Cold Movement Detector?",
+    "o": [
+     "Er erkennt Bewegungen des ausgeschalteten Fahrzeugs, damit der Zug nicht mit falscher Positionsannahme aufgerüstet wird. Die Information ist nur zeitlich begrenzt gültig.",
+     "Er erkennt Bewegungen des ausgeschalteten Fahrzeugs, seine Information bleibt aber unbegrenzt gültig.",
+     "Er misst die Temperatur der Radsatzlager bei kaltem Fahrzeug.",
+     "Er schaltet im Stand automatisch die Heizung ab."
+    ],
+    "why": "Der Cold Movement Detector erkennt, ob ein abgestelltes Fahrzeug bewegt wurde. Das ist für ETCS wichtig, weil die Positionsinformation sonst falsch oder ungültig sein könnte. Die Funktion ist zeitlich begrenzt (laut Dokument 72 Stunden), danach gilt die gespeicherte Information nicht mehr uneingeschränkt.",
+    "hint": "Der Zug steht kalt und wird bewegt. Was weiß ETCS danach über seine Position?",
+    "check": false
+   },
+   {
+    "id": 21,
+    "cat": "D",
+    "lvl": 3,
+    "q": "Was gilt für das MFD im Master-/Slave-Betrieb und bei gelben ICON-Trust-Symbolen?",
+    "o": [
+     "Eine Displayhälfte führt, die andere folgt. Bei Ausfall wird umgeschaltet oder ersetzt. Gelbe Symbole zeigen eingeschränkte Vertrauenswürdigkeit der Anzeige.",
+     "Eine Displayhälfte führt, die andere folgt. Gelbe Symbole bedeuten normalen Betrieb.",
+     "Beide Displayhälften arbeiten völlig unabhängig voneinander ohne Zusammenhang.",
+     "Master und Slave bezeichnen die beiden Triebköpfe des Zuges."
+    ],
+    "why": "Das MFD besteht aus zwei Displayhälften im Master-/Slave-Prinzip. Fällt ein Teil aus, soll die Anzeigelogik auf den funktionsfähigen Teil umschalten oder eine Ersatzdarstellung bieten. Gelbe ICON-Trust-Symbole zeigen eingeschränkte Vertrauenswürdigkeit oder Plausibilität an. Das genaue Vorgehen richtet sich nach der Unterlage.",
+    "hint": "Gelb heißt: Vorsicht beim Verlassen auf diese Anzeige.",
+    "check": true
+   },
+   {
+    "id": 22,
+    "cat": "D",
+    "lvl": 4,
+    "q": "Welche technische Bedeutung hat die Kontrollanzeige im MTD-Bild „Bremshundertstel“?",
+    "o": [
+     "Sie vergleicht den berechneten oder verfügbaren Bremswert mit einem Kontrollwert. Bei Abweichung sind Zug- und Bremskonfiguration technisch zu prüfen.",
+     "Sie zeigt den berechneten Bremswert an, ein Vergleich mit einem Kontrollwert findet nicht statt.",
+     "Sie zeigt den Druck im Hauptluftbehälter.",
+     "Sie zeigt die aktuelle Anzahl freier Sitzplätze."
+    ],
+    "why": "Im MTD-Bild werden berechnete beziehungsweise eingestellte Bremsleistungswerte mit einem Kontrollwert verglichen. Bei Abweichung geht es um die Prüfung von Zugkonfiguration, eingebundenen Einheiten, Bremszuständen, Störmeldungen und Eingaben. Das konkrete Vorgehen richtet sich nach Fahrzeug- und Betriebsunterlage.",
+    "hint": "Es geht um den Vergleich zweier Bremswerte.",
+    "check": true
+   },
+   {
+    "id": 23,
+    "cat": "D",
+    "lvl": 4,
+    "q": "Wozu dient „Cap hold on“ beim Kuppeln und Entkuppeln, und warum ist der Führerraumwechsel dabei wichtig?",
+    "o": [
+     "Es hält einen definierten Steuerungszustand. Der Führerraumwechsel legt Führungsrichtung und aktive Zugkonfiguration eindeutig neu fest.",
+     "Es hält die Bremse während des Kuppelns angelegt. Der Führerraumwechsel ist dafür unerheblich.",
+     "Es schaltet beim Kuppeln alle Stromabnehmer aus.",
+     "Es speichert die Fahrgastzahlen für die Abrechnung."
+    ],
+    "why": "„Cap hold on“ sichert beim Kuppeln und Entkuppeln einen definierten Steuerungszustand, damit Informationen oder Zuordnungen nicht unkontrolliert verloren gehen. Mit dem Führerraumwechsel ändern sich Führungsrichtung, aktive Zugspitze und Zuordnung der Zugsteuerung. Die genaue Bedeutung bitte in der Delta-Unterlage gegenprüfen.",
+    "hint": "Beim Kuppeln muss klar sein, welche Einheit führt.",
+    "check": true
+   },
+   {
+    "id": 24,
+    "cat": "D",
+    "lvl": 3,
+    "q": "Warum ist das Fahrgastinformationssystem (FIS) von der Zugsteuerung getrennt, und wozu dient die dritte E-Kupplung?",
+    "o": [
+     "Störungen sollen sich nicht gegenseitig beeinflussen. Die dritte E-Kupplung verbindet das FIS-Netzwerk gekuppelter Einheiten.",
+     "FIS und Zugsteuerung nutzen dasselbe Netz, die dritte E-Kupplung ist nur Reserve.",
+     "Die dritte E-Kupplung überträgt die Hochspannung zwischen den Einheiten.",
+     "Die dritte E-Kupplung führt die Druckluft für die Bremse."
+    ],
+    "why": "Das FIS wurde von der Zugsteuerung getrennt, damit Komfort-, Informations- und Betreiberfunktionen sicherheitsrelevante Steuerung nicht stören können, und umgekehrt. Beim Kuppeln stellt die dritte E-Kupplung die datentechnische Verbindung dieses getrennten Netzwerks her.",
+    "hint": "Komfort und Sicherheit sollen sich nicht gegenseitig stören.",
+    "check": false
+   },
+   {
+    "id": 25,
+    "cat": "D",
+    "lvl": 4,
+    "q": "Wofür ist die Notsteuerung gedacht?",
+    "o": [
+     "Für einen eingeschränkten Sonderbetrieb bei gestörter Zugsteuerung, zum Beispiel zum Räumen der Strecke. Fahrschalter, Bremse, Sifa und Geschwindigkeit sind begrenzt oder anders verschaltet.",
+     "Für den normalen Fahrbetrieb mit voller Geschwindigkeit, nur die Anzeigen sind ausgefallen.",
+     "Für die automatische Notbremsung bei Sifa-Auslösung.",
+     "Für die Freigabe der Fahrgastnotbremse."
+    ],
+    "why": "Die Notsteuerung erlaubt bei gestörter normaler Zugsteuerung nur einen eingeschränkten Sonderbetrieb. Schutz-, Komfort- und Automatikfunktionen arbeiten nicht im normalen Verbund, deshalb gelten besondere Grenzen und Überwachungen. Grenzwerte und Bedienfolgen nur aus der BR-408-Unterlage übernehmen.",
+    "hint": "Sonderbetrieb, kein Normalbetrieb.",
+    "check": true
+   }
+  ]
+ }
+]
