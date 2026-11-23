@@ -359,7 +359,7 @@ function playView() {
       '<div><button class="btn primary" id="btnNext" data-a="next">Zurück zum Spielbrett</button></div></div>';
   }
   const t = actorTeam(), canJ = c.phase === "choose";
-  const tools = '<div class="tools"><button class="btn sm" data-a="j" data-k="tip" ' + ((!canJ || t.tip) ? "disabled" : "") + '>Tipp</button>' +
+  const tools = '<div class="tools"><button class="btn sm" data-a="j" data-k="tip" ' + ((!canJ || t.tip || !c.hint) ? "disabled" : "") + '>Tipp</button>' +
     '<button class="btn sm" data-a="j" data-k="half" ' + ((!canJ || t.half || wrongLeft() < 2) ? "disabled" : "") + '>50:50</button><span class="spacer"></span>' +
     '<button class="btn sm warn" data-a="cancel" ' + ((c.phase === "choose" && !c.steal) ? "" : "disabled") + '>Frage zurücklegen</button></div>';
   const stealMsg = (c.steal && c.phase !== "reveal") ? '<div class="steal">Klau-Chance für ' + esc(actorTeam().name) + ': nur halbe Punkte (' + fmt(curPts()) + '), die falsche Antwort ist raus.</div>' : "";
