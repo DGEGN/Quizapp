@@ -1,4 +1,4 @@
-import { createStore, createLocalStore, fetchSeed } from "./store.js";
+import { createStore, createLocalStore, fetchSeed } from "./store.js?v=3";
 import CONFIG from "./firebase-config.js";
 
 /* ---------- Hilfen ---------- */
