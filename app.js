@@ -11,6 +11,7 @@ const fmt = (n) => Number(n).toLocaleString("de-DE");
 const nonEmpty = (s) => String(s).trim().length > 0;
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const sr = (t) => '<span class="sr">' + esc(t) + '</span>';
+const vtag = (w, extra) => sr(" Ergebnis: " + w + "." + (extra || "")) + '</span><span class="vt" aria-hidden="true">' + w;
 let liveTimer = null;
 function announce(msg) {
   const el = document.getElementById("live"); if (!el) return;
@@ -357,7 +358,7 @@ function playView() {
     if (c.phase === "wait" && c.sel === i) k.push("sel", "wait");
     if (wasWrong && c.phase !== "wait") k.push("bad");
     if (c.phase === "reveal") { if (o.ok) k.push("ok"); else if (!wasWrong) k.push("dim"); }
-    ans += '<button class="' + k.join(" ") + '" data-a="pick" data-i="' + i + '" ' + ((busy || gone || wasWrong) ? "disabled" : "") + (c.phase === "confirm" && c.sel === i ? ' aria-pressed="true"' : '') + '><span class="l" aria-hidden="true">' + LETTERS[i] + '</span><span class="sr">Antwort ' + LETTERS[i] + ': </span><span>' + esc(o.t) + (gone ? sr(" (durch 50:50 entfernt)") : wasWrong ? sr(" (falsch)") : (c.phase === "reveal" && o.ok) ? sr(" (richtig)") : "") + '</span></button>';
+    ans += '<button class="' + k.join(" ") + '" data-a="pick" data-i="' + i + '" ' + ((busy || gone || wasWrong) ? "disabled" : "") + (c.phase === "confirm" && c.sel === i ? ' aria-pressed="true"' : '') + '><span class="l" aria-hidden="true">' + LETTERS[i] + '</span><span class="sr">Antwort ' + LETTERS[i] + ': </span><span>' + esc(o.t) + (gone ? sr(". Durch 50:50 entfernt.") : wasWrong ? vtag("Falsch") : (c.phase === "reveal" && o.ok) ? vtag("Richtig") : (c.phase === "reveal") ? vtag("Falsch") : "") + '</span></button>';
   });
   let aux = "";
   if (c.hint) aux += '<div class="panel" id="hintPanel" role="group" aria-label="Tipp"><h3>Tipp</h3><p style="margin:0">' + esc(c.hint) + '</p></div>';
@@ -467,7 +468,7 @@ function testRunView() {
     const k = ["ans"];
     if (R.shown) { if (o.ok) k.push("ok"); else if (it.sel === i) k.push("bad"); else k.push("dim"); }
     else if (it.sel === i) k.push("sel");
-    ans += '<button class="' + k.join(" ") + '" data-a="tpick" data-i="' + i + '" ' + (R.shown ? "disabled" : "") + (!R.shown && it.sel === i ? ' aria-pressed="true"' : '') + '><span class="l" aria-hidden="true">' + LETTERS[i] + '</span><span class="sr">Antwort ' + LETTERS[i] + ': </span><span>' + esc(o.t) + (R.shown ? (o.ok ? sr(" (richtig)") : it.sel === i ? sr(" (deine Antwort, falsch)") : "") : "") + '</span></button>';
+    ans += '<button class="' + k.join(" ") + '" data-a="tpick" data-i="' + i + '" ' + (R.shown ? "disabled" : "") + (!R.shown && it.sel === i ? ' aria-pressed="true"' : '') + '><span class="l" aria-hidden="true">' + LETTERS[i] + '</span><span class="sr">Antwort ' + LETTERS[i] + ': </span><span>' + esc(o.t) + (R.shown ? (o.ok ? vtag("Richtig") : vtag("Falsch", it.sel === i ? " Das war deine Antwort." : "")) : "") + '</span></button>';
   });
   let aux = "";
   if (R.shown) {

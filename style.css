@@ -297,3 +297,4 @@ h1:focus-visible,h2:focus-visible,.explain:focus-visible,.answers:focus-visible,
 .explain:focus{outline:none}
 .tmh{margin:0;font:inherit}
 .optlabel{display:inline}
+.ans .vt{margin-left:auto;flex:none;font-family:var(--display);font-weight:800;font-size:15px;line-height:1;border-radius:999px;padding:5px 12px;background:rgba(12,17,70,.85);color:#fff}
