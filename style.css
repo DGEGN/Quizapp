@@ -264,3 +264,24 @@ dialog .btn.primary{background:var(--ink);color:#fff}
 /* Anmeldung */
 #login input{width:100%;border:2px solid #c9d0f5;border-radius:12px;padding:10px 14px;font-size:20px;color:var(--ink);background:#fff}
 #login .err{color:#c0153a;font-weight:700;min-height:1.4em;margin:8px 0 0}
+
+/* Wissenstest */
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:10px}
+.tmod{background:var(--glass);border:2px solid rgba(255,255,255,.22);border-left:8px solid var(--mc,var(--sun));border-radius:14px;padding:6px}
+.tmod.on{background:var(--glass2);border-color:var(--mc,var(--sun))}
+.tmain{display:flex;gap:12px;align-items:center;width:100%;background:none;border:0;color:inherit;text-align:left;padding:8px;cursor:pointer;font-size:18px}
+.tmain small{display:block;color:var(--muted);font-weight:700;font-size:14px}
+.tcheck{flex:none;width:30px;height:30px;border-radius:8px;border:2px solid rgba(255,255,255,.5);display:grid;place-items:center;font-weight:800;color:var(--ink)}
+.tmod.on .tcheck{background:var(--sun);border-color:var(--sun)}
+.tcats{display:flex;flex-wrap:wrap;gap:6px;padding:2px 8px 8px}
+.tchip{border:2px solid rgba(255,255,255,.35);background:transparent;color:var(--muted);border-radius:999px;padding:3px 12px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:line-through}
+.tchip[aria-pressed="true"]{background:var(--sun);color:var(--ink);border-color:var(--sun);text-decoration:none}
+.tseg{flex-wrap:wrap}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+.tprog{display:flex;align-items:center;gap:14px;font-weight:800;margin:6px 0 12px}
+.tbar{flex:1;height:12px;background:var(--glass);border-radius:999px;overflow:hidden;min-width:60px}
+.tbar i{display:block;height:100%;background:linear-gradient(90deg,var(--t1),var(--good));border-radius:999px}
+.tres{display:grid;gap:8px;margin-top:10px}
+.trow{display:grid;grid-template-columns:minmax(120px,1.4fr) 2fr auto;gap:12px;align-items:center}
+.trow b{font-family:var(--display);font-variant-numeric:tabular-nums}
+@media (max-width:560px){.trow{grid-template-columns:1fr auto}.trow .tbar{grid-column:1/-1;order:3}}

@@ -55,7 +55,8 @@ const S = {
   store: null, admin: false, quizzes: [], loadErr: "", loading: true,
   screen: "home", quiz: null, draft: null, dirty: false, msg: "", open: {},
   names: ["Team Blau", "Team Pink"], teamCount: 2, nAns: 3, sound: true,
-  teams: [], turn: 0, done: {}, log: [], cur: null, afterLogin: null, toast: ""
+  teams: [], turn: 0, done: {}, log: [], cur: null, afterLogin: null, toast: "",
+  t: { pick: {}, exc: {}, lv: [true, true, true, true], n: 20, mode: "learn", weak: false }, run: null
 };
 const root = $("#app");
 let timer = null;
@@ -112,6 +113,7 @@ function route() {
     const q = (S.draft && S.draft.id === b && S.dirty) ? S.draft : findQuiz(b);
     if (q) { S.draft = (q === S.draft) ? q : clone(q); S.screen = "edit"; render(); window.scrollTo(0, 0); return; }
   }
+  if (a === "test") { S.run = null; S.quiz = null; S.screen = "tsetup"; render(); window.scrollTo(0, 0); return; }
   S.screen = "home"; S.quiz = null; render(); window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", route);
@@ -255,7 +257,7 @@ const toastHtml = () => S.toast ? '<div class="toast" role="status">' + esc(S.to
 
 /* ---------- Ansichten: Quizwelt ---------- */
 function homeView() {
-  let h = topbar() + '<div class="wrap"><div class="worldhero"><h1>Willkommen in der <em>' + esc(CONFIG.siteTitle || "Quizwelt") + '</em></h1><p>Wähle ein Quiz und tritt mit deinem Team an.</p></div>';
+  let h = topbar() + '<div class="wrap"><div class="worldhero"><h1>Willkommen in der <em>' + esc(CONFIG.siteTitle || "Quizwelt") + '</em></h1><p>Wähle ein Quiz und tritt mit deinem Team an, oder teste dich mit dem Wissenstest allein.</p>' + (S.quizzes.length ? '<div class="cta" style="margin-top:18px"><button class="btn primary big" data-a="testsetup">Wissenstest starten</button></div>' : '') + '</div>';
   if (S.store.notice) h += '<div class="banner">' + esc(S.store.notice) + '</div>';
   if (S.loadErr) h += '<div class="banner">' + esc(S.loadErr) + '</div>';
   if (S.admin) {
@@ -386,6 +388,133 @@ function endView() {
     (list ? '<h2 style="font-size:30px;margin-top:12px">Rückblick</h2><div class="revlist">' + list + '</div>' : '') + '</div>';
 }
 
+
+/* ---------- Wissenstest (Selbsttest) ---------- */
+const WEAK_KEY = "quizwelt.weak.v1";
+function weakLoad() { try { return JSON.parse(localStorage.getItem(WEAK_KEY)) || {}; } catch (e) { return {}; } }
+function weakSave(w) { try { localStorage.setItem(WEAK_KEY, JSON.stringify(w)); } catch (e) { /* kein Speicher */ } }
+function testPool(ignoreWeak) {
+  const T = S.t, w = weakLoad(), out = [];
+  S.quizzes.forEach(qz => {
+    if (!T.pick[qz.id]) return;
+    const ex = T.exc[qz.id] || {};
+    qz.questions.forEach(q => {
+      if (!playable(q) || ex[q.cat] || !T.lv[q.lvl - 1]) return;
+      if (T.weak && !ignoreWeak && !w[qz.id + ":" + q.id]) return;
+      out.push({ qz, q });
+    });
+  });
+  return out;
+}
+function weakTotal() {
+  const w = weakLoad(); let n = 0;
+  S.quizzes.forEach(qz => qz.questions.forEach(q => { if (playable(q) && w[qz.id + ":" + q.id]) n++; }));
+  return n;
+}
+function buildRunItems(list) {
+  return list.map(x => {
+    const opts = shuffle(x.q.o.map((t, i) => ({ t, ok: i === 0 })).filter(o => nonEmpty(o.t)));
+    return { quizId: x.qz.id, quizTitle: plainTitle(x.qz.title), qid: x.q.id, cat: catName(x.qz, x.q.cat), lvl: x.qz.levels[x.q.lvl - 1].name,
+      q: x.q.q, opts: opts, why: x.q.why, check: x.q.check, sel: null, ok: null };
+  });
+}
+function startTest(list) {
+  if (!list.length) return;
+  S.run = { items: buildRunItems(list), i: 0, shown: false };
+  S.screen = "trun"; render(); window.scrollTo(0, 0);
+}
+function testSetupView() {
+  const T = S.t, pool = testPool(), all = testPool(true), wt = weakTotal();
+  let mods = "";
+  S.quizzes.forEach(qz => {
+    const on = !!T.pick[qz.id], np = qz.questions.filter(playable).length, ex = T.exc[qz.id] || {};
+    let cats = "";
+    if (on) cats = '<div class="tcats">' + qz.categories.map(c => '<button class="tchip" data-a="tcat" data-id="' + esc(qz.id) + '" data-c="' + esc(c.id) + '" aria-pressed="' + (!ex[c.id]) + '">' + esc(c.name) + '</button>').join("") + '</div>';
+    mods += '<div class="tmod' + (on ? " on" : "") + '" style="--mc:' + qz.color + '"><button class="tmain" data-a="tq" data-id="' + esc(qz.id) + '" aria-pressed="' + on + '"><span class="tcheck">' + (on ? "✓" : "") + '</span><span><strong>' + esc(plainTitle(qz.title)) + '</strong><small>' + np + ' Fragen · ' + qz.categories.length + ' Kategorien</small></span></button>' + cats + '</div>';
+  });
+  const nOpts = [10, 20, 30, 0].map(n => '<button data-a="tn" data-v="' + n + '" aria-pressed="' + (T.n === n) + '">' + (n ? n : "Alle") + '</button>').join("");
+  const lvOpts = ["Grundlagen", "Systemverständnis", "Vertiefung", "Experten"].map((nm, i) => '<button data-a="tlv" data-v="' + i + '" aria-pressed="' + T.lv[i] + '">' + nm + '</button>').join("");
+  const cnt = T.n ? Math.min(T.n, pool.length) : pool.length;
+  let hint = "";
+  if (!Object.keys(T.pick).some(k => T.pick[k])) hint = "Wähle mindestens ein Modul.";
+  else if (T.weak && !pool.length) hint = all.length ? "In der Auswahl gibt es keine Fragen, die du zuvor falsch beantwortet hast." : "Keine Fragen passen zur Auswahl.";
+  else if (!pool.length) hint = "Keine Fragen passen zur Auswahl.";
+  return topbar() + '<div class="wrap"><div class="heroq"><h1>Wissens<em>test</em></h1><p>Stelle dir aus den Modulen einen eigenen Test zusammen und teste dich selbst.</p></div>' +
+    '<section class="sect"><div class="qhead2"><h2>1. Module wählen</h2><span class="spacer"></span><button class="btn sm" data-a="tqall">Alle</button><button class="btn sm" data-a="tqnone">Keine</button></div><div class="tgrid">' + (mods || '<div class="empty">Noch kein Quiz vorhanden.</div>') + '</div></section>' +
+    '<section class="sect"><h2>2. Einstellungen</h2><div class="opts" style="justify-content:flex-start">' +
+    '<span><span class="optlabel">Anzahl</span><span class="seg">' + nOpts + '</span></span>' +
+    '<span><span class="optlabel">Modus</span><span class="seg"><button data-a="tmode" data-v="learn" aria-pressed="' + (T.mode === "learn") + '">Üben (sofort Rückmeldung)</button><button data-a="tmode" data-v="exam" aria-pressed="' + (T.mode === "exam") + '">Prüfung (Auswertung am Ende)</button></span></span></div>' +
+    '<div class="opts" style="justify-content:flex-start"><span><span class="optlabel">Stufen</span><span class="seg tseg">' + lvOpts + '</span></span></div>' +
+    '<div class="opts" style="justify-content:flex-start"><span><span class="optlabel">Schwächen</span><span class="seg"><button data-a="tweak" aria-pressed="' + T.weak + '"' + (wt ? "" : " disabled") + '>Nur Fragen, die ich zuvor falsch hatte (' + wt + ')</button></span></span></div></section>' +
+    '<div class="cta"><button class="btn primary big" id="btnTest" data-a="tstart"' + (pool.length ? "" : " disabled") + '>Test starten (' + cnt + ' Fragen)</button><button class="btn big" data-a="world">Alle Quizze</button></div>' +
+    (hint ? '<p class="note" role="status">' + esc(hint) + '</p>' : '') +
+    '<p class="note">Der Test speichert nur in diesem Browser, welche Fragen du falsch beantwortet hast. Richtig beantwortete Fragen verschwinden wieder aus der Schwächen-Liste.</p></div>' + toastHtml();
+}
+function testRunView() {
+  const R = S.run, it = R.items[R.i], learn = S.t.mode === "learn", n = R.items.length;
+  const done = R.items.filter(x => x.ok !== null).length, right = R.items.filter(x => x.ok === true).length;
+  let ans = "";
+  it.opts.forEach((o, i) => {
+    const k = ["ans"];
+    if (R.shown) { if (o.ok) k.push("ok"); else if (it.sel === i) k.push("bad"); else k.push("dim"); }
+    else if (it.sel === i) k.push("sel");
+    ans += '<button class="' + k.join(" ") + '" data-a="tpick" data-i="' + i + '" ' + (R.shown ? "disabled" : "") + '><span class="l">' + LETTERS[i] + '</span><span>' + esc(o.t) + '</span></button>';
+  });
+  let aux = "";
+  if (R.shown) {
+    const good = it.ok, right0 = it.opts.find(x => x.ok).t;
+    aux = '<div class="explain ' + (good ? "" : "fail") + '"><div class="verdict">' + (good ? "Richtig!" : "Leider falsch") + '</div>' + (good ? "" : '<p><strong>Richtig wäre gewesen:</strong> ' + esc(right0) + '</p>') +
+      (it.why ? '<p>' + esc(it.why) + '</p>' : '') + (it.check ? '<span class="tag">Unterlage prüfen</span>' : '') + '</div>';
+  }
+  const last = R.i === n - 1;
+  let btn;
+  if (learn) btn = R.shown ? '<button class="btn primary" id="btnTNext" data-a="tnext">' + (last ? "Auswerten" : "Nächste Frage") + '</button>' : '';
+  else btn = '<button class="btn primary" id="btnTNext" data-a="tnext"' + (it.sel === null ? " disabled" : "") + '>' + (last ? "Abgeben und auswerten" : "Weiter") + '</button>';
+  return topbar() + '<div class="wrap"><div class="tprog"><span>Frage ' + (R.i + 1) + ' von ' + n + '</span><div class="tbar" role="progressbar" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + done + '"><i style="width:' + Math.round(done / n * 100) + '%"></i></div>' +
+    (learn ? '<span>' + right + ' richtig</span>' : '<span>Prüfung</span>') + '</div>' +
+    '<div class="qhead"><span class="chip">' + esc(it.quizTitle) + '</span><span class="chip">' + esc(it.cat) + '</span><span class="chip">' + esc(it.lvl) + '</span></div>' +
+    '<h2 class="question">' + esc(it.q) + '</h2><div class="answers">' + ans + '</div><div class="aux">' + aux + '</div>' +
+    '<div class="tools">' + btn + '<span class="spacer"></span><button class="btn sm warn" data-a="tabort">Test abbrechen</button></div></div>';
+}
+function tpick(i) {
+  const R = S.run; if (!R || R.shown) return;
+  const it = R.items[R.i]; if (i < 0 || i >= it.opts.length) return;
+  it.sel = i; tone(SND.pick);
+  if (S.t.mode === "learn") { settleItem(it); R.shown = true; tone(it.ok ? SND.ok : SND.bad); }
+  render();
+}
+function settleItem(it) {
+  it.ok = !!it.opts[it.sel].ok;
+  const w = weakLoad(), k = it.quizId + ":" + it.qid;
+  if (it.ok) delete w[k]; else w[k] = 1;
+  weakSave(w);
+}
+function tnext() {
+  const R = S.run; if (!R) return;
+  const it = R.items[R.i];
+  if (S.t.mode === "exam") { if (it.sel === null) return; settleItem(it); }
+  else if (!R.shown) return;
+  if (R.i < R.items.length - 1) { R.i++; R.shown = false; render(); window.scrollTo(0, 0); }
+  else { S.screen = "tres"; render(); window.scrollTo(0, 0); }
+}
+function testResultView() {
+  const items = S.run.items, n = items.length, right = items.filter(x => x.ok).length, pct = Math.round(right / n * 100);
+  const title = pct >= 90 ? "Hervorragend!" : pct >= 75 ? "Gut gemacht!" : pct >= 50 ? "Solide Basis" : "Hier lohnt sich Wiederholen";
+  const groups = {};
+  items.forEach(x => { const k = x.quizTitle + " · " + x.cat; (groups[k] = groups[k] || { t: 0, r: 0 }); groups[k].t++; if (x.ok) groups[k].r++; });
+  const rows = Object.keys(groups).map(k => { const g = groups[k], p = Math.round(g.r / g.t * 100);
+    return '<div class="trow"><span>' + esc(k) + '</span><div class="tbar"><i style="width:' + p + '%"></i></div><b>' + g.r + '/' + g.t + '</b></div>'; }).join("");
+  const li = (x) => '<details class="rev ' + (x.ok ? "t1" : "none") + '"><summary>' + (x.ok ? "✓ " : "✗ ") + esc(x.q) + '</summary><div class="body"><p><strong>Richtig:</strong> ' + esc(x.opts.find(o => o.ok).t) + '</p>' +
+    (!x.ok && x.sel !== null ? '<p><strong>Deine Antwort:</strong> ' + esc(x.opts[x.sel].t) + '</p>' : '') + (x.why ? '<p>' + esc(x.why) + '</p>' : '') + (x.check ? '<span class="tag">Unterlage prüfen</span>' : '') +
+    '<p class="note" style="text-align:left;margin:6px 0 0">' + esc(x.quizTitle + " · " + x.cat) + '</p></div></details>';
+  const wrong = items.filter(x => !x.ok), good = items.filter(x => x.ok);
+  return topbar() + '<div class="wrap"><div class="winner"><h1>' + title + '</h1><p style="font-size:26px;margin:8px 0 4px"><strong>' + right + ' von ' + n + '</strong> richtig (' + pct + ' %)</p>' +
+    '<div class="cta"><button class="btn primary big" id="btnTRetry" data-a="tretry"' + (wrong.length ? "" : " disabled") + '>Falsche wiederholen (' + wrong.length + ')</button><button class="btn big" data-a="tnew">Neuer Test</button><button class="btn big" data-a="world">Alle Quizze</button></div></div>' +
+    '<h2 style="font-size:30px">Ergebnis nach Thema</h2><div class="tres">' + rows + '</div>' +
+    (wrong.length ? '<h2 style="font-size:30px;margin-top:18px">Falsch beantwortet</h2><div class="revlist">' + wrong.map(li).join("") + '</div>' : '') +
+    (good.length ? '<h2 style="font-size:30px;margin-top:18px">Richtig beantwortet</h2><div class="revlist">' + good.map(li).join("") + '</div>' : '') + '</div>';
+}
+
 /* ---------- Ansichten: Editor ---------- */
 function edCard(q, d) {
   const bad = !playable(q);
@@ -438,6 +567,9 @@ function render() {
   else if (S.screen === "play") h = playView();
   else if (S.screen === "end") h = endView();
   else if (S.screen === "edit") h = editView();
+  else if (S.screen === "tsetup") h = testSetupView();
+  else if (S.screen === "trun") h = testRunView();
+  else if (S.screen === "tres") h = testResultView();
   root.innerHTML = h;
   if (S.screen === "play" && S.cur && S.cur.phase === "reveal") { const b = $("#btnNext"); if (b) b.focus({ preventScroll: true }); }
   window.scrollTo(0, y);
@@ -506,6 +638,21 @@ root.addEventListener("click", async (e) => {
   switch (a) {
     case "name": return;
     case "world": go("#/"); break;
+    case "testsetup": go("#/test"); break;
+    case "tq": S.t.pick[id] = !S.t.pick[id]; render(); break;
+    case "tqall": S.quizzes.forEach(q => { S.t.pick[q.id] = true; }); render(); break;
+    case "tqnone": S.t.pick = {}; render(); break;
+    case "tcat": { const ex = S.t.exc[id] = S.t.exc[id] || {}, c = t.getAttribute("data-c"); if (ex[c]) delete ex[c]; else ex[c] = true; render(); break; }
+    case "tlv": { const i = +t.getAttribute("data-v"); S.t.lv[i] = !S.t.lv[i]; if (!S.t.lv.some(Boolean)) S.t.lv[i] = true; render(); break; }
+    case "tn": S.t.n = +t.getAttribute("data-v"); render(); break;
+    case "tmode": S.t.mode = t.getAttribute("data-v"); render(); break;
+    case "tweak": S.t.weak = !S.t.weak; render(); break;
+    case "tstart": { const pool = testPool(); startTest(S.t.n ? shuffle(pool).slice(0, S.t.n) : shuffle(pool)); break; }
+    case "tpick": tpick(+t.getAttribute("data-i")); break;
+    case "tnext": tnext(); break;
+    case "tabort": ask("Test wirklich abbrechen? Die Antworten dieses Tests gehen verloren.", [{ label: "Weitermachen" }, { label: "Abbrechen", primary: true, fn: () => { S.run = null; S.screen = "tsetup"; render(); window.scrollTo(0, 0); } }]); break;
+    case "tretry": startTest(shuffle(S.run.items.filter(x => !x.ok).map(x => { const qz = findQuiz(x.quizId); return { qz, q: qz && qz.questions.find(q => q.id === x.qid) }; }).filter(x => x.qz && x.q))); break;
+    case "tnew": S.run = null; S.screen = "tsetup"; render(); window.scrollTo(0, 0); break;
     case "play": go("#/quiz/" + encodeURIComponent(id)); break;
     case "edit": go("#/edit/" + encodeURIComponent(id)); break;
     case "login": openLogin(); break;
@@ -610,6 +757,12 @@ $("#fileIn").addEventListener("change", (e) => {
 });
 document.addEventListener("keydown", (e) => {
   if ($("#dlg").open || $("#login").open) return;
+  if (S.screen === "trun" && S.run) {
+    const k2 = e.key.toLowerCase();
+    if (["a", "b", "c", "d"].includes(k2) && !e.ctrlKey && !e.metaKey && !e.altKey) tpick(k2.charCodeAt(0) - 97);
+    else if (k2 === "enter" && (S.run.shown || (S.t.mode === "exam" && S.run.items[S.run.i].sel !== null))) { e.preventDefault(); tnext(); }
+    return;
+  }
   if (S.screen !== "play" || !S.cur) return;
   const k = e.key.toLowerCase();
   if (["a", "b", "c", "d"].includes(k) && !e.ctrlKey && !e.metaKey && !e.altKey) choose(k.charCodeAt(0) - 97);
