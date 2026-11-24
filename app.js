@@ -365,9 +365,9 @@ function playView() {
   if (c.phase === "reveal") {
     const o = c.outcome, good = o.team > -1, right = c.opts.find(x => x.ok).t;
     const head = good ? (S.teams.length === 2 ? esc(S.teams[o.team].name) + " holt " + fmt(o.pts) + " Punkte" + (o.steal ? " (geklaut)" : "") : "Richtig! +" + fmt(o.pts)) : "Leider nicht gelöst";
-    aux += '<div class="explain ' + (good ? "" : "fail") + '"><div id="explTxt"><div class="verdict">' + head + sr(". Stand: " + standText()) + '</div>' + (good ? "" : '<p><strong>Richtig wäre gewesen:</strong> ' + esc(right) + '</p>') +
+    aux += '<div class="explain ' + (good ? "" : "fail") + '" id="explTxt" tabindex="-1"><div class="verdict">' + head + sr(". Stand: " + standText()) + '</div>' + (good ? "" : '<p><strong>Richtig wäre gewesen:</strong> ' + esc(right) + '</p>') +
       (q.why ? '<p>' + esc(q.why) + '</p>' : '') + (q.check ? '<span class="tag">Unterlage prüfen</span>' : '') +
-      '</div><div><button class="btn primary" id="btnNext" data-a="next" aria-describedby="explTxt">Zurück zum Spielbrett</button></div></div>';
+      '</div><div class="explnext"><button class="btn primary" id="btnNext" data-a="next">Zurück zum Spielbrett</button></div>';
   }
   const t = actorTeam(), canJ = c.phase === "choose";
   const tools = '<div class="tools"><button class="btn sm" data-a="j" data-k="tip" ' + ((!canJ || t.tip || !c.q.hint) ? "disabled" : "") + '>Tipp</button>' +
@@ -472,12 +472,12 @@ function testRunView() {
   let aux = "";
   if (R.shown) {
     const good = it.ok, right0 = it.opts.find(x => x.ok).t;
-    aux = '<div class="explain ' + (good ? "" : "fail") + '"><div id="explT"><div class="verdict">' + (good ? "Richtig!" : "Leider falsch") + '</div>' + (good ? "" : '<p><strong>Richtig wäre gewesen:</strong> ' + esc(right0) + '</p>') +
-      (it.why ? '<p>' + esc(it.why) + '</p>' : '') + (it.check ? '<span class="tag">Unterlage prüfen</span>' : '') + '</div></div>';
+    aux = '<div class="explain ' + (good ? "" : "fail") + '" id="explT" tabindex="-1"><div class="verdict">' + (good ? "Richtig!" : "Leider falsch") + '</div>' + (good ? "" : '<p><strong>Richtig wäre gewesen:</strong> ' + esc(right0) + '</p>') +
+      (it.why ? '<p>' + esc(it.why) + '</p>' : '') + (it.check ? '<span class="tag">Unterlage prüfen</span>' : '') + '</div>';
   }
   const last = R.i === n - 1;
   let btn;
-  if (learn) btn = R.shown ? '<button class="btn primary" id="btnTNext" data-a="tnext" aria-describedby="explT">' + (last ? "Auswerten" : "Nächste Frage") + '</button>' : '';
+  if (learn) btn = R.shown ? '<button class="btn primary" id="btnTNext" data-a="tnext">' + (last ? "Auswerten" : "Nächste Frage") + '</button>' : '';
   else btn = '<button class="btn primary" id="btnTNext" data-a="tnext"' + (it.sel === null ? " disabled" : "") + '>' + (last ? "Abgeben und auswerten" : "Weiter") + '</button>';
   return topbar() + '<div class="wrap"><div class="tprog"><span aria-hidden="true">Frage ' + (R.i + 1) + ' von ' + n + '</span><div class="tbar" role="progressbar" aria-label="Fortschritt" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + done + '" aria-valuetext="' + done + ' von ' + n + ' beantwortet"><i style="width:' + Math.round(done / n * 100) + '%"></i></div>' +
     (learn ? '<span>' + right + ' richtig</span>' : '<span>Prüfung</span>') + '</div>' +
@@ -613,9 +613,9 @@ function render() {
   const fb = S.fb; S.fb = null;
   let done = false;
   if (sig !== lastSig) {
-    if (S.screen === "play" && c && c.phase === "reveal") done = focusEl($("#btnNext"));
+    if (S.screen === "play" && c && c.phase === "reveal") done = focusEl($("#explTxt"));
     else if (S.screen === "play" && c && c.phase === "confirm") done = focusEl($("#btnLock"));
-    else if (S.screen === "trun" && R && R.shown) done = focusEl($("#btnTNext"));
+    else if (S.screen === "trun" && R && R.shown) done = focusEl($("#explT"));
   }
   if (!done && fb) done = focusEl(document.querySelector(fb));
   if (!done && sk !== lastSk) done = focusHeading();

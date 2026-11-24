@@ -290,6 +290,8 @@ dialog .btn.primary{background:var(--ink);color:#fff}
 .sr{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
 .skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--sun);color:var(--ink);border:0;border-radius:999px;padding:10px 20px;font-weight:800;font-size:17px}
 .skip:focus{top:12px}
-h1:focus-visible,h2:focus-visible,.answers:focus-visible,#hintPanel:focus-visible{outline:3px solid var(--sun);outline-offset:4px;border-radius:6px}
+h1:focus-visible,h2:focus-visible,.explain:focus-visible,.answers:focus-visible,#hintPanel:focus-visible{outline:3px solid var(--sun);outline-offset:4px;border-radius:6px}
 @media (forced-colors:active){.tile,.ans,.btn,.ghost,.tchip,.tmain{border:2px solid ButtonText}.ans.ok{border-color:Highlight}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+.explnext{margin-top:14px}
+.explain:focus{outline:none}
