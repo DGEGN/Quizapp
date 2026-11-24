@@ -244,7 +244,7 @@ function nextAfter() {
 /* ---------- Ansichten: Rahmen ---------- */
 function topbar() {
   const inGame = ["board", "play", "end"].includes(S.screen);
-  let h = '<div class="top"><button class="logo" data-a="world"><span class="q">?</span><span>' + esc(CONFIG.siteTitle || "Quizwelt") + '<small>Alle Quizze</small></span></button><div class="spacer"></div>';
+  let h = '<div class="top"><button class="logo" data-a="world"><img class="mark" src="img/logo.png" alt="" width="48" height="48"><span>' + esc(CONFIG.siteTitle || "Quizwelt") + '<small>Alle Quizze</small></span></button><div class="spacer"></div>';
   if (S.admin) h += '<span class="chip">Bearbeiten-Modus</span><button class="ghost" data-a="logout">Abmelden</button>';
   else if (S.screen === "home" || S.screen === "start") h += '<button class="ghost" data-a="login">Bearbeiten</button>';
   if (inGame) h += '<button class="ghost" data-a="tostart">Neues Spiel</button>';
