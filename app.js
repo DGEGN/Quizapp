@@ -301,8 +301,8 @@ function startView() {
   const [l1, l2] = titleParts(q.title);
   return topbar() + '<div class="wrap"><div class="heroq"><h1>' + esc(l1) + (l2 ? ' <em>' + esc(l2) + '</em>' : '') + '</h1>' +
     '<p>' + (q.subtitle ? esc(q.subtitle) + ' · ' : '') + np + ' Fragen</p></div>' +
-    '<div class="opts"><span><span class="optlabel" aria-hidden="true">Teams</span><span class="seg" role="group" aria-label="Teams"><button data-a="tc" data-v="2" aria-pressed="' + (S.teamCount === 2) + '">Zwei Teams</button><button data-a="tc" data-v="1" aria-pressed="' + (S.teamCount === 1) + '">Solo</button></span></span>' +
-    '<span><span class="optlabel" aria-hidden="true">Antworten</span><span class="seg" role="group" aria-label="Anzahl Antworten"><button data-a="na" data-v="3" aria-pressed="' + (S.nAns === 3) + '">3 pro Frage</button><button data-a="na" data-v="4" aria-pressed="' + (S.nAns === 4) + '">4 pro Frage</button></span></span></div>' +
+    '<h2 class="sr">Spieleinstellungen</h2><div class="opts"><span><span class="optlabel" role="heading" aria-level="3">Teams</span><span class="seg" role="group" aria-label="Teams"><button data-a="tc" data-v="2" aria-pressed="' + (S.teamCount === 2) + '">Zwei Teams</button><button data-a="tc" data-v="1" aria-pressed="' + (S.teamCount === 1) + '">Solo</button></span></span>' +
+    '<span><span class="optlabel" role="heading" aria-level="3">Antworten pro Frage</span><span class="seg" role="group" aria-label="Antworten pro Frage"><button data-a="na" data-v="3" aria-pressed="' + (S.nAns === 3) + '">3 pro Frage</button><button data-a="na" data-v="4" aria-pressed="' + (S.nAns === 4) + '">4 pro Frage</button></span></span></div>' +
     '<div class="setup" style="' + (S.teamCount === 1 ? "grid-template-columns:1fr" : "") + '">' +
     '<div class="pult t1"><label for="nm0">Name Team 1</label><input id="nm0" data-a="name" data-v="0" type="text" maxlength="24" value="' + esc(S.names[0]) + '"></div>' +
     (S.teamCount === 2 ? '<div class="pult t2"><label for="nm1">Name Team 2</label><input id="nm1" data-a="name" data-v="1" type="text" maxlength="24" value="' + esc(S.names[1]) + '"></div>' : '') + '</div>' +
@@ -313,7 +313,7 @@ function startView() {
 
 /* ---------- Ansichten: Spiel ---------- */
 function scoreView() {
-  let h = '<div class="score' + (S.teams.length === 1 ? " solo" : "") + '" role="group" aria-label="Punktestand">';
+  let h = '<h2 class="sr">Punktestand</h2><div class="score' + (S.teams.length === 1 ? " solo" : "") + '" role="group" aria-label="Punktestand">';
   const active = S.cur ? S.cur.actor : S.turn;
   S.teams.forEach((t, i) => {
     const on = S.teams.length > 1 && i === active && S.screen !== "end";
@@ -338,7 +338,7 @@ function boardView() {
         tiles += '<button class="tile" data-a="open" data-id="' + q.id + '" aria-label="Frage ' + q.id + ', ' + esc(c.name) + ', ' + esc(qz.levels[q.lvl - 1].name) + ', ' + fmt(pts) + ' Punkte"><span class="v">' + fmt(pts) + '</span><span class="n">Frage ' + q.id + '<br>' + esc(qz.levels[q.lvl - 1].name) + '</span></button>';
       }
     });
-    cols += '<div class="col" role="group" aria-label="Kategorie ' + esc(c.name) + '"><div class="cat" aria-hidden="true">' + esc(c.name) + '</div>' + tiles + '</div>';
+    cols += '<div class="col" role="group" aria-labelledby="cat-' + esc(c.id) + '"><h3 class="cat" id="cat-' + esc(c.id) + '">' + esc(c.name) + '</h3>' + tiles + '</div>';
   });
   const t = S.teams[S.turn], left = openTiles().length, total = qz.questions.filter(playable).length;
   return topbar() + '<div class="wrap">' + scoreView() +
@@ -357,7 +357,7 @@ function playView() {
     if (c.phase === "wait" && c.sel === i) k.push("sel", "wait");
     if (wasWrong && c.phase !== "wait") k.push("bad");
     if (c.phase === "reveal") { if (o.ok) k.push("ok"); else if (!wasWrong) k.push("dim"); }
-    ans += '<button class="' + k.join(" ") + '" data-a="pick" data-i="' + i + '" ' + ((busy || gone || wasWrong) ? "disabled" : "") + (c.phase === "confirm" && c.sel === i ? ' aria-pressed="true"' : '') + '><span class="l">' + LETTERS[i] + '</span><span>' + esc(o.t) + (gone ? sr(" (durch 50:50 entfernt)") : wasWrong ? sr(" (falsch)") : (c.phase === "reveal" && o.ok) ? sr(" (richtig)") : "") + '</span></button>';
+    ans += '<button class="' + k.join(" ") + '" data-a="pick" data-i="' + i + '" ' + ((busy || gone || wasWrong) ? "disabled" : "") + (c.phase === "confirm" && c.sel === i ? ' aria-pressed="true"' : '') + '><span class="l" aria-hidden="true">' + LETTERS[i] + '</span><span class="sr">Antwort ' + LETTERS[i] + ': </span><span>' + esc(o.t) + (gone ? sr(" (durch 50:50 entfernt)") : wasWrong ? sr(" (falsch)") : (c.phase === "reveal" && o.ok) ? sr(" (richtig)") : "") + '</span></button>';
   });
   let aux = "";
   if (c.hint) aux += '<div class="panel" id="hintPanel" role="group" aria-label="Tipp"><h3>Tipp</h3><p style="margin:0">' + esc(c.hint) + '</p></div>';
@@ -365,7 +365,7 @@ function playView() {
   if (c.phase === "reveal") {
     const o = c.outcome, good = o.team > -1, right = c.opts.find(x => x.ok).t;
     const head = good ? (S.teams.length === 2 ? esc(S.teams[o.team].name) + " holt " + fmt(o.pts) + " Punkte" + (o.steal ? " (geklaut)" : "") : "Richtig! +" + fmt(o.pts)) : "Leider nicht gelöst";
-    aux += '<div class="explain ' + (good ? "" : "fail") + '" id="explTxt" tabindex="-1"><div class="verdict">' + head + sr(". Stand: " + standText()) + '</div>' + (good ? "" : '<p><strong>Richtig wäre gewesen:</strong> ' + esc(right) + '</p>') +
+    aux += '<h3 class="sr">Auswertung</h3><div class="explain ' + (good ? "" : "fail") + '" id="explTxt" tabindex="-1"><div class="verdict">' + head + sr(". Stand: " + standText()) + '</div>' + (good ? "" : '<p><strong>Richtig wäre gewesen:</strong> ' + esc(right) + '</p>') +
       (q.why ? '<p>' + esc(q.why) + '</p>' : '') + (q.check ? '<span class="tag">Unterlage prüfen</span>' : '') +
       '</div><div class="explnext"><button class="btn primary" id="btnNext" data-a="next">Zurück zum Spielbrett</button></div>';
   }
@@ -376,7 +376,7 @@ function playView() {
   const stealMsg = (c.steal && c.phase !== "reveal") ? '<div class="steal">Klau-Chance für ' + esc(actorTeam().name) + ': nur halbe Punkte (' + fmt(curPts()) + '), die falsche Antwort ist raus.</div>' : "";
   return topbar() + '<div class="wrap">' + scoreView() +
     '<div class="qhead"><span class="chip">' + esc(catName(qz, q.cat)) + '</span><span class="chip">Frage ' + q.id + ' · ' + esc(qz.levels[q.lvl - 1].name) + '</span><span class="prize">' + fmt(curPts()) + ' Punkte</span></div>' +
-    stealMsg + '<h2 class="question" tabindex="-1">' + sr("Frage " + q.id + ", " + catName(qz, q.cat) + ", " + qz.levels[q.lvl - 1].name + ", " + fmt(curPts()) + " Punkte. " + (S.teams.length === 2 ? actorTeam().name + " antwortet" + (c.steal ? ", Klau-Chance mit halben Punkten, die falsche Antwort ist raus" : "") + ". " : "")) + esc(q.q) + '</h2><div class="answers" id="ansGroup" role="group" aria-label="Antworten" tabindex="-1">' + ans + '</div><div class="aux">' + aux + '</div>' + tools + '</div>';
+    stealMsg + '<h2 class="question" tabindex="-1">' + sr("Frage " + q.id + ", " + catName(qz, q.cat) + ", " + qz.levels[q.lvl - 1].name + ", " + fmt(curPts()) + " Punkte. " + (S.teams.length === 2 ? actorTeam().name + " antwortet" + (c.steal ? ", Klau-Chance mit halben Punkten, die falsche Antwort ist raus" : "") + ". " : "")) + esc(q.q) + '</h2><h3 class="sr">Antworten</h3><div class="answers" id="ansGroup" role="group" aria-label="Antworten" tabindex="-1">' + ans + '</div><div class="aux">' + aux + '</div>' + tools + '</div>';
 }
 function endView() {
   let title, sub = "";
@@ -438,10 +438,10 @@ function testSetupView() {
   S.quizzes.forEach(qz => {
     const on = !!T.pick[qz.id], np = qz.questions.filter(playable).length, ex = T.exc[qz.id] || {};
     let cats = "";
-    if (on) cats = '<div class="tcats">' + qz.categories.map(c => '<button class="tchip" role="checkbox" data-a="tcat" data-id="' + esc(qz.id) + '" data-c="' + esc(c.id) + '" aria-checked="' + (!ex[c.id]) + '">' + esc(c.name) + '</button>').join("") + '</div>';
-    mods += '<div class="tmod' + (on ? " on" : "") + '" style="--mc:' + qz.color + '"><button class="tmain" role="checkbox" data-a="tq" data-id="' + esc(qz.id) + '" aria-checked="' + on + '"><span class="tcheck" aria-hidden="true">' + (on ? "✓" : "") + '</span><span><strong>' + esc(plainTitle(qz.title)) + '</strong><small>' + np + ' Fragen · ' + qz.categories.length + ' Kategorien</small></span></button>' + cats + '</div>';
+    if (on) cats = '<div class="tcats" role="group" aria-label="Kategorien: ' + esc(plainTitle(qz.title)) + '"><h4 class="sr">Kategorien: ' + esc(plainTitle(qz.title)) + '</h4>' + qz.categories.map(c => '<button class="tchip" role="checkbox" data-a="tcat" data-id="' + esc(qz.id) + '" data-c="' + esc(c.id) + '" aria-checked="' + (!ex[c.id]) + '">' + esc(c.name) + '</button>').join("") + '</div>';
+    mods += '<div class="tmod' + (on ? " on" : "") + '" style="--mc:' + qz.color + '"><h3 class="tmh"><button class="tmain" role="checkbox" data-a="tq" data-id="' + esc(qz.id) + '" aria-checked="' + on + '"><span class="tcheck" aria-hidden="true">' + (on ? "✓" : "") + '</span><span><strong>' + esc(plainTitle(qz.title)) + '</strong><small>' + np + ' Fragen · ' + qz.categories.length + ' Kategorien</small></span></button></h3>' + cats + '</div>';
   });
-  const nOpts = [10, 20, 30, 0].map(n => '<button data-a="tn" data-v="' + n + '" aria-pressed="' + (T.n === n) + '">' + (n ? n : "Alle") + '</button>').join("");
+  const nOpts = [10, 20, 30, 0].map(n => '<button data-a="tn" data-v="' + n + '" aria-pressed="' + (T.n === n) + '">' + (n ? n + " Fragen" : "Alle Fragen") + '</button>').join("");
   const lvOpts = ["Grundlagen", "Systemverständnis", "Vertiefung", "Experten"].map((nm, i) => '<button data-a="tlv" data-v="' + i + '" aria-pressed="' + T.lv[i] + '">' + nm + '</button>').join("");
   const cnt = T.n ? Math.min(T.n, pool.length) : pool.length;
   let hint = "";
@@ -451,11 +451,11 @@ function testSetupView() {
   return topbar() + '<div class="wrap"><div class="heroq"><h1 tabindex="-1" aria-label="Wissenstest">Wissens<em>test</em></h1><p>Stelle dir aus den Modulen einen eigenen Test zusammen und teste dich selbst.</p></div>' +
     '<section class="sect"><div class="qhead2"><h2>1. Module wählen</h2><span class="spacer"></span><button class="btn sm" data-a="tqall">Alle</button><button class="btn sm" data-a="tqnone">Keine</button></div><div class="tgrid" role="group" aria-label="Module">' + (mods || '<div class="empty">Noch kein Quiz vorhanden.</div>') + '</div></section>' +
     '<section class="sect"><h2>2. Einstellungen</h2><div class="opts" style="justify-content:flex-start">' +
-    '<span><span class="optlabel" aria-hidden="true">Anzahl</span><span class="seg" role="group" aria-label="Anzahl Fragen">' + nOpts + '</span></span>' +
-    '<span><span class="optlabel" aria-hidden="true">Modus</span><span class="seg" role="group" aria-label="Modus"><button data-a="tmode" data-v="learn" aria-pressed="' + (T.mode === "learn") + '">Üben (sofort Rückmeldung)</button><button data-a="tmode" data-v="exam" aria-pressed="' + (T.mode === "exam") + '">Prüfung (Auswertung am Ende)</button></span></span></div>' +
-    '<div class="opts" style="justify-content:flex-start"><span><span class="optlabel" aria-hidden="true">Stufen</span><span class="seg tseg" role="group" aria-label="Stufen">' + lvOpts + '</span></span></div>' +
-    '<div class="opts" style="justify-content:flex-start"><span><span class="optlabel" aria-hidden="true">Schwächen</span><span class="seg" role="group" aria-label="Schwächen"><button data-a="tweak" aria-pressed="' + T.weak + '"' + (wt ? "" : " disabled") + '>Nur Fragen, die ich zuvor falsch hatte (' + wt + ')</button></span></span></div></section>' +
-    '<div class="cta"><button class="btn primary big" id="btnTest" data-a="tstart"' + (pool.length ? "" : " disabled") + '>Test starten (' + cnt + ' Fragen)</button><button class="btn big" data-a="world">Alle Quizze</button></div>' +
+    '<span><span class="optlabel" role="heading" aria-level="3">Anzahl der Fragen</span><span class="seg" role="group" aria-label="Anzahl der Fragen">' + nOpts + '</span></span>' +
+    '<span><span class="optlabel" role="heading" aria-level="3">Modus</span><span class="seg" role="group" aria-label="Modus"><button data-a="tmode" data-v="learn" aria-pressed="' + (T.mode === "learn") + '">Üben (sofort Rückmeldung)</button><button data-a="tmode" data-v="exam" aria-pressed="' + (T.mode === "exam") + '">Prüfung (Auswertung am Ende)</button></span></span></div>' +
+    '<div class="opts" style="justify-content:flex-start"><span><span class="optlabel" role="heading" aria-level="3">Stufen (Schwierigkeit)</span><span class="seg tseg" role="group" aria-label="Stufen (Schwierigkeit)">' + lvOpts + '</span></span></div>' +
+    '<div class="opts" style="justify-content:flex-start"><span><span class="optlabel" role="heading" aria-level="3">Schwächen trainieren</span><span class="seg" role="group" aria-label="Schwächen trainieren"><button data-a="tweak" aria-pressed="' + T.weak + '"' + (wt ? "" : " disabled") + '>Nur Fragen, die ich zuvor falsch hatte (' + wt + ')</button></span></span></div></section>' +
+    '<h2 class="sr">3. Test starten</h2><div class="cta"><button class="btn primary big" id="btnTest" data-a="tstart"' + (pool.length ? "" : " disabled") + '>Test starten (' + cnt + ' Fragen)</button><button class="btn big" data-a="world">Alle Quizze</button></div>' +
     (hint ? '<p class="note" role="status">' + esc(hint) + '</p>' : '') +
     '<p class="note">Der Test speichert nur in diesem Browser, welche Fragen du falsch beantwortet hast. Richtig beantwortete Fragen verschwinden wieder aus der Schwächen-Liste.</p></div>' + toastHtml();
 }
@@ -467,12 +467,12 @@ function testRunView() {
     const k = ["ans"];
     if (R.shown) { if (o.ok) k.push("ok"); else if (it.sel === i) k.push("bad"); else k.push("dim"); }
     else if (it.sel === i) k.push("sel");
-    ans += '<button class="' + k.join(" ") + '" data-a="tpick" data-i="' + i + '" ' + (R.shown ? "disabled" : "") + (!R.shown && it.sel === i ? ' aria-pressed="true"' : '') + '><span class="l">' + LETTERS[i] + '</span><span>' + esc(o.t) + (R.shown ? (o.ok ? sr(" (richtig)") : it.sel === i ? sr(" (deine Antwort, falsch)") : "") : "") + '</span></button>';
+    ans += '<button class="' + k.join(" ") + '" data-a="tpick" data-i="' + i + '" ' + (R.shown ? "disabled" : "") + (!R.shown && it.sel === i ? ' aria-pressed="true"' : '') + '><span class="l" aria-hidden="true">' + LETTERS[i] + '</span><span class="sr">Antwort ' + LETTERS[i] + ': </span><span>' + esc(o.t) + (R.shown ? (o.ok ? sr(" (richtig)") : it.sel === i ? sr(" (deine Antwort, falsch)") : "") : "") + '</span></button>';
   });
   let aux = "";
   if (R.shown) {
     const good = it.ok, right0 = it.opts.find(x => x.ok).t;
-    aux = '<div class="explain ' + (good ? "" : "fail") + '" id="explT" tabindex="-1"><div class="verdict">' + (good ? "Richtig!" : "Leider falsch") + '</div>' + (good ? "" : '<p><strong>Richtig wäre gewesen:</strong> ' + esc(right0) + '</p>') +
+    aux = '<h3 class="sr">Auswertung</h3><div class="explain ' + (good ? "" : "fail") + '" id="explT" tabindex="-1"><div class="verdict">' + (good ? "Richtig!" : "Leider falsch") + '</div>' + (good ? "" : '<p><strong>Richtig wäre gewesen:</strong> ' + esc(right0) + '</p>') +
       (it.why ? '<p>' + esc(it.why) + '</p>' : '') + (it.check ? '<span class="tag">Unterlage prüfen</span>' : '') + '</div>';
   }
   const last = R.i === n - 1;
@@ -482,7 +482,7 @@ function testRunView() {
   return topbar() + '<div class="wrap"><div class="tprog"><span aria-hidden="true">Frage ' + (R.i + 1) + ' von ' + n + '</span><div class="tbar" role="progressbar" aria-label="Fortschritt" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + done + '" aria-valuetext="' + done + ' von ' + n + ' beantwortet"><i style="width:' + Math.round(done / n * 100) + '%"></i></div>' +
     (learn ? '<span>' + right + ' richtig</span>' : '<span>Prüfung</span>') + '</div>' +
     '<div class="qhead"><span class="chip">' + esc(it.quizTitle) + '</span><span class="chip">' + esc(it.cat) + '</span><span class="chip">' + esc(it.lvl) + '</span></div>' +
-    '<h2 class="question" tabindex="-1">' + sr("Frage " + (R.i + 1) + " von " + n + ", " + it.quizTitle + ", " + it.cat + ", " + it.lvl + ". ") + esc(it.q) + '</h2><div class="answers" id="ansGroup" role="group" aria-label="Antworten" tabindex="-1">' + ans + '</div><div class="aux">' + aux + '</div>' +
+    '<h2 class="question" tabindex="-1">' + sr("Frage " + (R.i + 1) + " von " + n + ", " + it.quizTitle + ", " + it.cat + ", " + it.lvl + ". ") + esc(it.q) + '</h2><h3 class="sr">Antworten</h3><div class="answers" id="ansGroup" role="group" aria-label="Antworten" tabindex="-1">' + ans + '</div><div class="aux">' + aux + '</div>' +
     '<div class="tools">' + btn + '<span class="spacer"></span><button class="btn sm warn" data-a="tabort">Test abbrechen</button></div></div>';
 }
 function tpick(i) {

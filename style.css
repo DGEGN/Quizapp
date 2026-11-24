@@ -295,3 +295,5 @@ h1:focus-visible,h2:focus-visible,.explain:focus-visible,.answers:focus-visible,
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 .explnext{margin-top:14px}
 .explain:focus{outline:none}
+.tmh{margin:0;font:inherit}
+.optlabel{display:inline}
