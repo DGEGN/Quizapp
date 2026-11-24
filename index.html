@@ -11,14 +11,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
-<div class="app" id="app"><p style="padding:40px;text-align:center">Lade Quizwelt …</p></div>
-<dialog id="dlg"><p id="dlgMsg"></p><div class="row" id="dlgBtns"></div></dialog>
-<dialog id="login">
-  <p>Passwort für den Bearbeiten-Modus</p>
-  <input id="loginPw" type="password" autocomplete="current-password" aria-label="Passwort">
+<button class="skip" id="skip" type="button">Zum Inhalt springen</button>
+<div id="live" class="sr" role="status" aria-live="polite" aria-atomic="true"></div>
+<main class="app" id="app" tabindex="-1"><p style="padding:40px;text-align:center">Lade Quizwelt …</p></main>
+<dialog id="dlg" role="alertdialog" aria-labelledby="dlgMsg"><p id="dlgMsg"></p><div class="row" id="dlgBtns"></div></dialog>
+<dialog id="login" aria-labelledby="loginTitle">
+  <p id="loginTitle">Passwort für den Bearbeiten-Modus</p>
+  <input id="loginPw" type="password" autocomplete="current-password" aria-label="Passwort" aria-describedby="loginMsg">
   <p class="err" id="loginMsg" role="alert"></p>
   <div class="row"><button class="btn" id="loginCancel" type="button">Abbrechen</button><button class="btn primary" id="loginOk" type="button">Anmelden</button></div>
 </dialog>
@@ -39,6 +41,6 @@
   setTimeout(function () { show("Das Laden dauert ungewöhnlich lange oder eine Datei fehlt (app.js, store.js, firebase-config.js)."); }, 25000);
 })();
 </script>
-<script type="module" src="app.js?v=8"></script>
+<script type="module" src="app.js?v=9"></script>
 </body>
 </html>

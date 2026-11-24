@@ -10,6 +10,14 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 const fmt = (n) => Number(n).toLocaleString("de-DE");
 const nonEmpty = (s) => String(s).trim().length > 0;
 const clone = (o) => JSON.parse(JSON.stringify(o));
+const sr = (t) => '<span class="sr">' + esc(t) + '</span>';
+let liveTimer = null;
+function announce(msg) {
+  const el = document.getElementById("live"); if (!el) return;
+  clearTimeout(liveTimer); el.textContent = "";
+  liveTimer = setTimeout(() => { el.textContent = msg; }, 150);
+}
+const standText = () => S.teams.map(t => t.name + " " + fmt(t.score)).join(", ");
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function uid(title) {
   const slug = String(title || "quiz").toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24) || "quiz";
@@ -133,7 +141,7 @@ function ask(msg, buttons) {
   dlg.showModal();
 }
 function showToast(m) {
-  S.toast = m; render();
+  S.toast = m; announce(m); render();
   clearTimeout(toastTimer); toastTimer = setTimeout(() => { S.toast = ""; render(); }, 2500);
 }
 function openLogin(next) {
@@ -205,7 +213,7 @@ function choose(i) {
 }
 function lockIn() {
   const c = S.cur; if (!c || c.phase !== "confirm") return;
-  c.phase = "wait"; tone(SND.lock); render();
+  c.phase = "wait"; tone(SND.lock); S.fb = "#ansGroup"; announce("Antwort ist eingeloggt. Die Auflösung folgt."); render();
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   timer = setTimeout(resolve, reduce ? 300 : 1400);
 }
@@ -226,13 +234,14 @@ function joker(kind) {
   const c = S.cur; if (!c || c.phase !== "choose") return;
   const t = actorTeam(); if (t[kind]) return;
   t[kind] = true; tone(SND.joker);
-  if (kind === "tip") c.hint = c.q.hint || "Dazu gibt es keinen Hinweis.";
+  if (kind === "tip") { c.hint = c.q.hint || "Dazu gibt es keinen Hinweis."; announce("Tipp: " + c.hint); }
   if (kind === "half") {
     const rem = []; c.opts.forEach((o, i) => { if (!o.ok && !c.removed.includes(i) && !c.wrong.includes(i)) rem.push(i); });
     const n = Math.max(Math.min(S.nAns === 4 ? 2 : 1, rem.length - 1), 0);
     c.removed = c.removed.concat(shuffle(rem).slice(0, n));
+    announce("50:50: " + n + " falsche Antwort" + (n === 1 ? " ist" : "en sind") + " entfernt.");
   }
-  render();
+  S.fb = "#ansGroup"; render();
 }
 function nextAfter() {
   const c = S.cur; if (!c || c.phase !== "reveal") return;
@@ -246,14 +255,14 @@ function nextAfter() {
 /* ---------- Ansichten: Rahmen ---------- */
 function topbar() {
   const inGame = ["board", "play", "end"].includes(S.screen);
-  let h = '<div class="top"><button class="logo" data-a="world"><img class="mark" src="img/logo.png" alt="" width="48" height="48"><span>' + esc(CONFIG.siteTitle || "Quizwelt") + '<small>Alle Quizze</small></span></button><div class="spacer"></div>';
+  let h = '<nav class="top" aria-label="Hauptmenü"><button class="logo" data-a="world" aria-label="' + esc(CONFIG.siteTitle || "Quizwelt") + ', zu allen Quizzen"><img class="mark" src="img/logo.png" alt="" width="48" height="48"><span>' + esc(CONFIG.siteTitle || "Quizwelt") + '<small>Alle Quizze</small></span></button><div class="spacer"></div>';
   if (S.admin) h += '<span class="chip">Bearbeiten-Modus</span><button class="ghost" data-a="logout">Abmelden</button>';
   else if (S.screen === "home" || S.screen === "start") h += '<button class="ghost" data-a="login">Bearbeiten</button>';
   if (inGame) h += '<button class="ghost" data-a="tostart">Neues Spiel</button>';
-  h += '<button class="ghost" data-a="sound" aria-pressed="' + S.sound + '">Ton: ' + (S.sound ? "an" : "aus") + '</button><button class="ghost" data-a="full">Vollbild</button></div>';
+  h += '<button class="ghost" data-a="sound">Ton: ' + (S.sound ? "an" : "aus") + '</button><button class="ghost" data-a="full">Vollbild</button></nav>';
   return h;
 }
-const toastHtml = () => S.toast ? '<div class="toast" role="status">' + esc(S.toast) + '</div>' : "";
+const toastHtml = () => S.toast ? '<div class="toast" aria-hidden="true">' + esc(S.toast) + '</div>' : "";
 
 /* ---------- Ansichten: Quizwelt ---------- */
 function homeView() {
@@ -271,14 +280,14 @@ function homeView() {
   }
   if (!S.quizzes.length) h += '<div class="empty">Noch kein Quiz vorhanden.' + (S.admin ? " Lege oben ein neues an." : "") + '</div>';
   else {
-    h += '<div class="cards">';
+    h += '<div class="cards" role="list">';
     S.quizzes.forEach(q => {
       const np = q.questions.filter(playable).length;
-      h += '<article class="card"><div class="strip" style="background:' + q.color + '"></div><div class="cbody"><h2>' + esc(plainTitle(q.title)) + '</h2>' +
+      h += '<article class="card" role="listitem"><div class="strip" style="background:' + q.color + '"></div><div class="cbody"><h2>' + esc(plainTitle(q.title)) + '</h2>' +
         (q.subtitle ? '<div class="sub">' + esc(q.subtitle) + '</div>' : '') +
         '<div class="chips"><span class="chip">' + np + ' Fragen</span><span class="chip">' + q.categories.length + ' Kategorien</span></div></div>' +
-        '<div class="acts"><button class="btn primary sm" data-a="play" data-id="' + esc(q.id) + '">Spielen</button>' +
-        (S.admin ? '<button class="btn sm" data-a="edit" data-id="' + esc(q.id) + '">Bearbeiten</button><button class="btn sm" data-a="dup" data-id="' + esc(q.id) + '">Duplizieren</button><button class="btn sm warn" data-a="delquiz" data-id="' + esc(q.id) + '">Löschen</button>' : '') +
+        '<div class="acts"><button class="btn primary sm" data-a="play" data-id="' + esc(q.id) + '" aria-label="Spielen: ' + esc(plainTitle(q.title)) + '">Spielen</button>' +
+        (S.admin ? '<button class="btn sm" data-a="edit" data-id="' + esc(q.id) + '" aria-label="Bearbeiten: ' + esc(plainTitle(q.title)) + '">Bearbeiten</button><button class="btn sm" data-a="dup" data-id="' + esc(q.id) + '" aria-label="Duplizieren: ' + esc(plainTitle(q.title)) + '">Duplizieren</button><button class="btn sm warn" data-a="delquiz" data-id="' + esc(q.id) + '" aria-label="Löschen: ' + esc(plainTitle(q.title)) + '">Löschen</button>' : '') +
         '</div></article>';
     });
     h += '</div>';
@@ -290,10 +299,10 @@ function homeView() {
 function startView() {
   const q = S.quiz, np = q.questions.filter(playable).length;
   const [l1, l2] = titleParts(q.title);
-  return topbar() + '<div class="wrap"><div class="heroq"><h1>' + esc(l1) + (l2 ? '<em>' + esc(l2) + '</em>' : '') + '</h1>' +
+  return topbar() + '<div class="wrap"><div class="heroq"><h1>' + esc(l1) + (l2 ? ' <em>' + esc(l2) + '</em>' : '') + '</h1>' +
     '<p>' + (q.subtitle ? esc(q.subtitle) + ' · ' : '') + np + ' Fragen</p></div>' +
-    '<div class="opts"><span><span class="optlabel">Teams</span><span class="seg"><button data-a="tc" data-v="2" aria-pressed="' + (S.teamCount === 2) + '">Zwei Teams</button><button data-a="tc" data-v="1" aria-pressed="' + (S.teamCount === 1) + '">Solo</button></span></span>' +
-    '<span><span class="optlabel">Antworten</span><span class="seg"><button data-a="na" data-v="3" aria-pressed="' + (S.nAns === 3) + '">3 pro Frage</button><button data-a="na" data-v="4" aria-pressed="' + (S.nAns === 4) + '">4 pro Frage</button></span></span></div>' +
+    '<div class="opts"><span><span class="optlabel" aria-hidden="true">Teams</span><span class="seg" role="group" aria-label="Teams"><button data-a="tc" data-v="2" aria-pressed="' + (S.teamCount === 2) + '">Zwei Teams</button><button data-a="tc" data-v="1" aria-pressed="' + (S.teamCount === 1) + '">Solo</button></span></span>' +
+    '<span><span class="optlabel" aria-hidden="true">Antworten</span><span class="seg" role="group" aria-label="Anzahl Antworten"><button data-a="na" data-v="3" aria-pressed="' + (S.nAns === 3) + '">3 pro Frage</button><button data-a="na" data-v="4" aria-pressed="' + (S.nAns === 4) + '">4 pro Frage</button></span></span></div>' +
     '<div class="setup" style="' + (S.teamCount === 1 ? "grid-template-columns:1fr" : "") + '">' +
     '<div class="pult t1"><label for="nm0">Name Team 1</label><input id="nm0" data-a="name" data-v="0" type="text" maxlength="24" value="' + esc(S.names[0]) + '"></div>' +
     (S.teamCount === 2 ? '<div class="pult t2"><label for="nm1">Name Team 2</label><input id="nm1" data-a="name" data-v="1" type="text" maxlength="24" value="' + esc(S.names[1]) + '"></div>' : '') + '</div>' +
@@ -304,11 +313,11 @@ function startView() {
 
 /* ---------- Ansichten: Spiel ---------- */
 function scoreView() {
-  let h = '<div class="score' + (S.teams.length === 1 ? " solo" : "") + '">';
+  let h = '<div class="score' + (S.teams.length === 1 ? " solo" : "") + '" role="group" aria-label="Punktestand">';
   const active = S.cur ? S.cur.actor : S.turn;
   S.teams.forEach((t, i) => {
     const on = S.teams.length > 1 && i === active && S.screen !== "end";
-    h += '<div class="pod t' + (i + 1) + (on ? " on" : "") + '"><div><div class="nm">' + esc(t.name) + '</div><div class="jk"><span class="' + (t.tip ? "used" : "") + '">Tipp</span><span class="' + (t.half ? "used" : "") + '">50:50</span></div></div><div class="pts">' + fmt(t.score) + '</div></div>';
+    h += '<div class="pod t' + (i + 1) + (on ? " on" : "") + '"><div><div class="nm">' + esc(t.name) + (on ? sr(" ist am Zug") : "") + '</div><div class="jk"><span class="' + (t.tip ? "used" : "") + '">Tipp' + sr(t.tip ? " verbraucht" : " verfügbar") + '</span><span class="' + (t.half ? "used" : "") + '">50:50' + sr(t.half ? " verbraucht" : " verfügbar") + '</span></div></div><div class="pts">' + fmt(t.score) + sr(" Punkte") + '</div></div>';
     if (i === 0 && S.teams.length === 2) h += '<div class="mid">gegen</div>';
   });
   if (S.teams.length === 1) h += '<div class="mid">' + openTiles().length + ' offen</div>';
@@ -324,12 +333,12 @@ function boardView() {
       const d = S.done[q.id], pts = qz.levels[q.lvl - 1].points;
       if (d) {
         const cls = d.team === -1 ? "none" : "t" + (d.team + 1);
-        tiles += '<button class="tile done ' + cls + '" disabled><span class="v">' + fmt(pts) + '</span><span class="n">Frage ' + q.id + '<br>' + (d.team === -1 ? "ungelöst" : esc(S.teams[d.team].name)) + '</span></button>';
+        tiles += '<button class="tile done ' + cls + '" disabled aria-label="Frage ' + q.id + ', ' + (d.team === -1 ? "ungelöst" : "gewonnen von " + esc(S.teams[d.team].name)) + ', ' + fmt(pts) + ' Punkte"><span class="v">' + fmt(pts) + '</span><span class="n">Frage ' + q.id + '<br>' + (d.team === -1 ? "ungelöst" : esc(S.teams[d.team].name)) + '</span></button>';
       } else {
-        tiles += '<button class="tile" data-a="open" data-id="' + q.id + '"><span class="v">' + fmt(pts) + '</span><span class="n">Frage ' + q.id + '<br>' + esc(qz.levels[q.lvl - 1].name) + '</span></button>';
+        tiles += '<button class="tile" data-a="open" data-id="' + q.id + '" aria-label="Frage ' + q.id + ', ' + esc(c.name) + ', ' + esc(qz.levels[q.lvl - 1].name) + ', ' + fmt(pts) + ' Punkte"><span class="v">' + fmt(pts) + '</span><span class="n">Frage ' + q.id + '<br>' + esc(qz.levels[q.lvl - 1].name) + '</span></button>';
       }
     });
-    cols += '<div class="col"><div class="cat">' + esc(c.name) + '</div>' + tiles + '</div>';
+    cols += '<div class="col" role="group" aria-label="Kategorie ' + esc(c.name) + '"><div class="cat" aria-hidden="true">' + esc(c.name) + '</div>' + tiles + '</div>';
   });
   const t = S.teams[S.turn], left = openTiles().length, total = qz.questions.filter(playable).length;
   return topbar() + '<div class="wrap">' + scoreView() +
@@ -348,17 +357,17 @@ function playView() {
     if (c.phase === "wait" && c.sel === i) k.push("sel", "wait");
     if (wasWrong && c.phase !== "wait") k.push("bad");
     if (c.phase === "reveal") { if (o.ok) k.push("ok"); else if (!wasWrong) k.push("dim"); }
-    ans += '<button class="' + k.join(" ") + '" data-a="pick" data-i="' + i + '" ' + ((busy || gone || wasWrong) ? "disabled" : "") + '><span class="l">' + LETTERS[i] + '</span><span>' + esc(o.t) + '</span></button>';
+    ans += '<button class="' + k.join(" ") + '" data-a="pick" data-i="' + i + '" ' + ((busy || gone || wasWrong) ? "disabled" : "") + (c.phase === "confirm" && c.sel === i ? ' aria-pressed="true"' : '') + '><span class="l">' + LETTERS[i] + '</span><span>' + esc(o.t) + (gone ? sr(" (durch 50:50 entfernt)") : wasWrong ? sr(" (falsch)") : (c.phase === "reveal" && o.ok) ? sr(" (richtig)") : "") + '</span></button>';
   });
   let aux = "";
-  if (c.hint) aux += '<div class="panel"><h3>Tipp</h3><p style="margin:0">' + esc(c.hint) + '</p></div>';
-  if (c.phase === "confirm") aux += '<div class="confirm"><strong>' + esc(actorTeam().name) + ': Ist ' + LETTERS[c.sel] + ' eure endgültige Antwort?</strong><button class="btn" data-a="back">Andere wählen</button><button class="btn primary" id="btnLock" data-a="lock">Endgültig</button></div>';
+  if (c.hint) aux += '<div class="panel" id="hintPanel" role="group" aria-label="Tipp"><h3>Tipp</h3><p style="margin:0">' + esc(c.hint) + '</p></div>';
+  if (c.phase === "confirm") aux += '<div class="confirm" role="group" aria-label="Bestätigung"><strong id="cfTxt">' + esc(actorTeam().name) + ': Ist ' + LETTERS[c.sel] + ' eure endgültige Antwort?</strong><button class="btn" data-a="back">Andere wählen</button><button class="btn primary" id="btnLock" data-a="lock" aria-describedby="cfTxt">Endgültig</button></div>';
   if (c.phase === "reveal") {
     const o = c.outcome, good = o.team > -1, right = c.opts.find(x => x.ok).t;
     const head = good ? (S.teams.length === 2 ? esc(S.teams[o.team].name) + " holt " + fmt(o.pts) + " Punkte" + (o.steal ? " (geklaut)" : "") : "Richtig! +" + fmt(o.pts)) : "Leider nicht gelöst";
-    aux += '<div class="explain ' + (good ? "" : "fail") + '"><div class="verdict">' + head + '</div>' + (good ? "" : '<p><strong>Richtig wäre gewesen:</strong> ' + esc(right) + '</p>') +
+    aux += '<div class="explain ' + (good ? "" : "fail") + '"><div id="explTxt"><div class="verdict">' + head + sr(". Stand: " + standText()) + '</div>' + (good ? "" : '<p><strong>Richtig wäre gewesen:</strong> ' + esc(right) + '</p>') +
       (q.why ? '<p>' + esc(q.why) + '</p>' : '') + (q.check ? '<span class="tag">Unterlage prüfen</span>' : '') +
-      '<div><button class="btn primary" id="btnNext" data-a="next">Zurück zum Spielbrett</button></div></div>';
+      '</div><div><button class="btn primary" id="btnNext" data-a="next" aria-describedby="explTxt">Zurück zum Spielbrett</button></div></div>';
   }
   const t = actorTeam(), canJ = c.phase === "choose";
   const tools = '<div class="tools"><button class="btn sm" data-a="j" data-k="tip" ' + ((!canJ || t.tip || !c.q.hint) ? "disabled" : "") + '>Tipp</button>' +
@@ -367,7 +376,7 @@ function playView() {
   const stealMsg = (c.steal && c.phase !== "reveal") ? '<div class="steal">Klau-Chance für ' + esc(actorTeam().name) + ': nur halbe Punkte (' + fmt(curPts()) + '), die falsche Antwort ist raus.</div>' : "";
   return topbar() + '<div class="wrap">' + scoreView() +
     '<div class="qhead"><span class="chip">' + esc(catName(qz, q.cat)) + '</span><span class="chip">Frage ' + q.id + ' · ' + esc(qz.levels[q.lvl - 1].name) + '</span><span class="prize">' + fmt(curPts()) + ' Punkte</span></div>' +
-    stealMsg + '<h2 class="question">' + esc(q.q) + '</h2><div class="answers">' + ans + '</div><div class="aux">' + aux + '</div>' + tools + '</div>';
+    stealMsg + '<h2 class="question" tabindex="-1">' + sr("Frage " + q.id + ", " + catName(qz, q.cat) + ", " + qz.levels[q.lvl - 1].name + ", " + fmt(curPts()) + " Punkte. " + (S.teams.length === 2 ? actorTeam().name + " antwortet" + (c.steal ? ", Klau-Chance mit halben Punkten, die falsche Antwort ist raus" : "") + ". " : "")) + esc(q.q) + '</h2><div class="answers" id="ansGroup" role="group" aria-label="Antworten" tabindex="-1">' + ans + '</div><div class="aux">' + aux + '</div>' + tools + '</div>';
 }
 function endView() {
   let title, sub = "";
@@ -383,7 +392,7 @@ function endView() {
     const cls = l.team === -1 ? "none" : "t" + (l.team + 1), who = l.team === -1 ? "ungelöst" : esc(S.teams[l.team].name);
     list += '<details class="rev ' + cls + '"><summary>Frage ' + q.id + ': ' + esc(q.q) + ' (' + who + ')</summary><div class="body"><p><strong>Richtig:</strong> ' + esc(q.o[0]) + '</p>' + (q.why ? '<p>' + esc(q.why) + '</p>' : '') + (q.check ? '<span class="tag">Unterlage prüfen</span>' : '') + '</div></details>';
   });
-  return topbar() + '<div class="wrap">' + scoreView() + '<div class="winner"><h1>' + title + '</h1><p style="font-size:22px;color:var(--muted);margin:8px 0 18px">' + sub + '</p>' +
+  return topbar() + '<div class="wrap">' + scoreView() + '<div class="winner"><h1 tabindex="-1">' + title + sr(". " + sub.replace(/&amp;/g, "&")) + '</h1><p aria-hidden="true" style="font-size:22px;color:var(--muted);margin:8px 0 18px">' + sub + '</p>' +
     '<div class="cta"><button class="btn primary big" id="btnAgain" data-a="start">Neue Runde</button><button class="btn big" data-a="world">Alle Quizze</button></div></div>' +
     (list ? '<h2 style="font-size:30px;margin-top:12px">Rückblick</h2><div class="revlist">' + list + '</div>' : '') + '</div>';
 }
@@ -429,8 +438,8 @@ function testSetupView() {
   S.quizzes.forEach(qz => {
     const on = !!T.pick[qz.id], np = qz.questions.filter(playable).length, ex = T.exc[qz.id] || {};
     let cats = "";
-    if (on) cats = '<div class="tcats">' + qz.categories.map(c => '<button class="tchip" data-a="tcat" data-id="' + esc(qz.id) + '" data-c="' + esc(c.id) + '" aria-pressed="' + (!ex[c.id]) + '">' + esc(c.name) + '</button>').join("") + '</div>';
-    mods += '<div class="tmod' + (on ? " on" : "") + '" style="--mc:' + qz.color + '"><button class="tmain" data-a="tq" data-id="' + esc(qz.id) + '" aria-pressed="' + on + '"><span class="tcheck">' + (on ? "✓" : "") + '</span><span><strong>' + esc(plainTitle(qz.title)) + '</strong><small>' + np + ' Fragen · ' + qz.categories.length + ' Kategorien</small></span></button>' + cats + '</div>';
+    if (on) cats = '<div class="tcats">' + qz.categories.map(c => '<button class="tchip" role="checkbox" data-a="tcat" data-id="' + esc(qz.id) + '" data-c="' + esc(c.id) + '" aria-checked="' + (!ex[c.id]) + '">' + esc(c.name) + '</button>').join("") + '</div>';
+    mods += '<div class="tmod' + (on ? " on" : "") + '" style="--mc:' + qz.color + '"><button class="tmain" role="checkbox" data-a="tq" data-id="' + esc(qz.id) + '" aria-checked="' + on + '"><span class="tcheck" aria-hidden="true">' + (on ? "✓" : "") + '</span><span><strong>' + esc(plainTitle(qz.title)) + '</strong><small>' + np + ' Fragen · ' + qz.categories.length + ' Kategorien</small></span></button>' + cats + '</div>';
   });
   const nOpts = [10, 20, 30, 0].map(n => '<button data-a="tn" data-v="' + n + '" aria-pressed="' + (T.n === n) + '">' + (n ? n : "Alle") + '</button>').join("");
   const lvOpts = ["Grundlagen", "Systemverständnis", "Vertiefung", "Experten"].map((nm, i) => '<button data-a="tlv" data-v="' + i + '" aria-pressed="' + T.lv[i] + '">' + nm + '</button>').join("");
@@ -439,13 +448,13 @@ function testSetupView() {
   if (!Object.keys(T.pick).some(k => T.pick[k])) hint = "Wähle mindestens ein Modul.";
   else if (T.weak && !pool.length) hint = all.length ? "In der Auswahl gibt es keine Fragen, die du zuvor falsch beantwortet hast." : "Keine Fragen passen zur Auswahl.";
   else if (!pool.length) hint = "Keine Fragen passen zur Auswahl.";
-  return topbar() + '<div class="wrap"><div class="heroq"><h1>Wissens<em>test</em></h1><p>Stelle dir aus den Modulen einen eigenen Test zusammen und teste dich selbst.</p></div>' +
-    '<section class="sect"><div class="qhead2"><h2>1. Module wählen</h2><span class="spacer"></span><button class="btn sm" data-a="tqall">Alle</button><button class="btn sm" data-a="tqnone">Keine</button></div><div class="tgrid">' + (mods || '<div class="empty">Noch kein Quiz vorhanden.</div>') + '</div></section>' +
+  return topbar() + '<div class="wrap"><div class="heroq"><h1 tabindex="-1" aria-label="Wissenstest">Wissens<em>test</em></h1><p>Stelle dir aus den Modulen einen eigenen Test zusammen und teste dich selbst.</p></div>' +
+    '<section class="sect"><div class="qhead2"><h2>1. Module wählen</h2><span class="spacer"></span><button class="btn sm" data-a="tqall">Alle</button><button class="btn sm" data-a="tqnone">Keine</button></div><div class="tgrid" role="group" aria-label="Module">' + (mods || '<div class="empty">Noch kein Quiz vorhanden.</div>') + '</div></section>' +
     '<section class="sect"><h2>2. Einstellungen</h2><div class="opts" style="justify-content:flex-start">' +
-    '<span><span class="optlabel">Anzahl</span><span class="seg">' + nOpts + '</span></span>' +
-    '<span><span class="optlabel">Modus</span><span class="seg"><button data-a="tmode" data-v="learn" aria-pressed="' + (T.mode === "learn") + '">Üben (sofort Rückmeldung)</button><button data-a="tmode" data-v="exam" aria-pressed="' + (T.mode === "exam") + '">Prüfung (Auswertung am Ende)</button></span></span></div>' +
-    '<div class="opts" style="justify-content:flex-start"><span><span class="optlabel">Stufen</span><span class="seg tseg">' + lvOpts + '</span></span></div>' +
-    '<div class="opts" style="justify-content:flex-start"><span><span class="optlabel">Schwächen</span><span class="seg"><button data-a="tweak" aria-pressed="' + T.weak + '"' + (wt ? "" : " disabled") + '>Nur Fragen, die ich zuvor falsch hatte (' + wt + ')</button></span></span></div></section>' +
+    '<span><span class="optlabel" aria-hidden="true">Anzahl</span><span class="seg" role="group" aria-label="Anzahl Fragen">' + nOpts + '</span></span>' +
+    '<span><span class="optlabel" aria-hidden="true">Modus</span><span class="seg" role="group" aria-label="Modus"><button data-a="tmode" data-v="learn" aria-pressed="' + (T.mode === "learn") + '">Üben (sofort Rückmeldung)</button><button data-a="tmode" data-v="exam" aria-pressed="' + (T.mode === "exam") + '">Prüfung (Auswertung am Ende)</button></span></span></div>' +
+    '<div class="opts" style="justify-content:flex-start"><span><span class="optlabel" aria-hidden="true">Stufen</span><span class="seg tseg" role="group" aria-label="Stufen">' + lvOpts + '</span></span></div>' +
+    '<div class="opts" style="justify-content:flex-start"><span><span class="optlabel" aria-hidden="true">Schwächen</span><span class="seg" role="group" aria-label="Schwächen"><button data-a="tweak" aria-pressed="' + T.weak + '"' + (wt ? "" : " disabled") + '>Nur Fragen, die ich zuvor falsch hatte (' + wt + ')</button></span></span></div></section>' +
     '<div class="cta"><button class="btn primary big" id="btnTest" data-a="tstart"' + (pool.length ? "" : " disabled") + '>Test starten (' + cnt + ' Fragen)</button><button class="btn big" data-a="world">Alle Quizze</button></div>' +
     (hint ? '<p class="note" role="status">' + esc(hint) + '</p>' : '') +
     '<p class="note">Der Test speichert nur in diesem Browser, welche Fragen du falsch beantwortet hast. Richtig beantwortete Fragen verschwinden wieder aus der Schwächen-Liste.</p></div>' + toastHtml();
@@ -458,22 +467,22 @@ function testRunView() {
     const k = ["ans"];
     if (R.shown) { if (o.ok) k.push("ok"); else if (it.sel === i) k.push("bad"); else k.push("dim"); }
     else if (it.sel === i) k.push("sel");
-    ans += '<button class="' + k.join(" ") + '" data-a="tpick" data-i="' + i + '" ' + (R.shown ? "disabled" : "") + '><span class="l">' + LETTERS[i] + '</span><span>' + esc(o.t) + '</span></button>';
+    ans += '<button class="' + k.join(" ") + '" data-a="tpick" data-i="' + i + '" ' + (R.shown ? "disabled" : "") + (!R.shown && it.sel === i ? ' aria-pressed="true"' : '') + '><span class="l">' + LETTERS[i] + '</span><span>' + esc(o.t) + (R.shown ? (o.ok ? sr(" (richtig)") : it.sel === i ? sr(" (deine Antwort, falsch)") : "") : "") + '</span></button>';
   });
   let aux = "";
   if (R.shown) {
     const good = it.ok, right0 = it.opts.find(x => x.ok).t;
-    aux = '<div class="explain ' + (good ? "" : "fail") + '"><div class="verdict">' + (good ? "Richtig!" : "Leider falsch") + '</div>' + (good ? "" : '<p><strong>Richtig wäre gewesen:</strong> ' + esc(right0) + '</p>') +
-      (it.why ? '<p>' + esc(it.why) + '</p>' : '') + (it.check ? '<span class="tag">Unterlage prüfen</span>' : '') + '</div>';
+    aux = '<div class="explain ' + (good ? "" : "fail") + '"><div id="explT"><div class="verdict">' + (good ? "Richtig!" : "Leider falsch") + '</div>' + (good ? "" : '<p><strong>Richtig wäre gewesen:</strong> ' + esc(right0) + '</p>') +
+      (it.why ? '<p>' + esc(it.why) + '</p>' : '') + (it.check ? '<span class="tag">Unterlage prüfen</span>' : '') + '</div></div>';
   }
   const last = R.i === n - 1;
   let btn;
-  if (learn) btn = R.shown ? '<button class="btn primary" id="btnTNext" data-a="tnext">' + (last ? "Auswerten" : "Nächste Frage") + '</button>' : '';
+  if (learn) btn = R.shown ? '<button class="btn primary" id="btnTNext" data-a="tnext" aria-describedby="explT">' + (last ? "Auswerten" : "Nächste Frage") + '</button>' : '';
   else btn = '<button class="btn primary" id="btnTNext" data-a="tnext"' + (it.sel === null ? " disabled" : "") + '>' + (last ? "Abgeben und auswerten" : "Weiter") + '</button>';
-  return topbar() + '<div class="wrap"><div class="tprog"><span>Frage ' + (R.i + 1) + ' von ' + n + '</span><div class="tbar" role="progressbar" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + done + '"><i style="width:' + Math.round(done / n * 100) + '%"></i></div>' +
+  return topbar() + '<div class="wrap"><div class="tprog"><span aria-hidden="true">Frage ' + (R.i + 1) + ' von ' + n + '</span><div class="tbar" role="progressbar" aria-label="Fortschritt" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + done + '" aria-valuetext="' + done + ' von ' + n + ' beantwortet"><i style="width:' + Math.round(done / n * 100) + '%"></i></div>' +
     (learn ? '<span>' + right + ' richtig</span>' : '<span>Prüfung</span>') + '</div>' +
     '<div class="qhead"><span class="chip">' + esc(it.quizTitle) + '</span><span class="chip">' + esc(it.cat) + '</span><span class="chip">' + esc(it.lvl) + '</span></div>' +
-    '<h2 class="question">' + esc(it.q) + '</h2><div class="answers">' + ans + '</div><div class="aux">' + aux + '</div>' +
+    '<h2 class="question" tabindex="-1">' + sr("Frage " + (R.i + 1) + " von " + n + ", " + it.quizTitle + ", " + it.cat + ", " + it.lvl + ". ") + esc(it.q) + '</h2><div class="answers" id="ansGroup" role="group" aria-label="Antworten" tabindex="-1">' + ans + '</div><div class="aux">' + aux + '</div>' +
     '<div class="tools">' + btn + '<span class="spacer"></span><button class="btn sm warn" data-a="tabort">Test abbrechen</button></div></div>';
 }
 function tpick(i) {
@@ -481,6 +490,7 @@ function tpick(i) {
   const it = R.items[R.i]; if (i < 0 || i >= it.opts.length) return;
   it.sel = i; tone(SND.pick);
   if (S.t.mode === "learn") { settleItem(it); R.shown = true; tone(it.ok ? SND.ok : SND.bad); }
+  else announce("Antwort " + LETTERS[i] + " gewählt");
   render();
 }
 function settleItem(it) {
@@ -503,12 +513,12 @@ function testResultView() {
   const groups = {};
   items.forEach(x => { const k = x.quizTitle + " · " + x.cat; (groups[k] = groups[k] || { t: 0, r: 0 }); groups[k].t++; if (x.ok) groups[k].r++; });
   const rows = Object.keys(groups).map(k => { const g = groups[k], p = Math.round(g.r / g.t * 100);
-    return '<div class="trow"><span>' + esc(k) + '</span><div class="tbar"><i style="width:' + p + '%"></i></div><b>' + g.r + '/' + g.t + '</b></div>'; }).join("");
+    return '<div class="trow"><span>' + esc(k) + '</span><div class="tbar" aria-hidden="true"><i style="width:' + p + '%"></i></div><b>' + g.r + '/' + g.t + '</b></div>'; }).join("");
   const li = (x) => '<details class="rev ' + (x.ok ? "t1" : "none") + '"><summary>' + (x.ok ? "✓ " : "✗ ") + esc(x.q) + '</summary><div class="body"><p><strong>Richtig:</strong> ' + esc(x.opts.find(o => o.ok).t) + '</p>' +
     (!x.ok && x.sel !== null ? '<p><strong>Deine Antwort:</strong> ' + esc(x.opts[x.sel].t) + '</p>' : '') + (x.why ? '<p>' + esc(x.why) + '</p>' : '') + (x.check ? '<span class="tag">Unterlage prüfen</span>' : '') +
     '<p class="note" style="text-align:left;margin:6px 0 0">' + esc(x.quizTitle + " · " + x.cat) + '</p></div></details>';
   const wrong = items.filter(x => !x.ok), good = items.filter(x => x.ok);
-  return topbar() + '<div class="wrap"><div class="winner"><h1>' + title + '</h1><p style="font-size:26px;margin:8px 0 4px"><strong>' + right + ' von ' + n + '</strong> richtig (' + pct + ' %)</p>' +
+  return topbar() + '<div class="wrap"><div class="winner"><h1 tabindex="-1">' + title + sr(". " + right + " von " + n + " richtig, " + pct + " Prozent.") + '</h1><p aria-hidden="true" style="font-size:26px;margin:8px 0 4px"><strong>' + right + ' von ' + n + '</strong> richtig (' + pct + ' %)</p>' +
     '<div class="cta"><button class="btn primary big" id="btnTRetry" data-a="tretry"' + (wrong.length ? "" : " disabled") + '>Falsche wiederholen (' + wrong.length + ')</button><button class="btn big" data-a="tnew">Neuer Test</button><button class="btn big" data-a="world">Alle Quizze</button></div></div>' +
     '<h2 style="font-size:30px">Ergebnis nach Thema</h2><div class="tres">' + rows + '</div>' +
     (wrong.length ? '<h2 style="font-size:30px;margin-top:18px">Falsch beantwortet</h2><div class="revlist">' + wrong.map(li).join("") + '</div>' : '') +
@@ -557,6 +567,26 @@ function editView() {
     d.questions.map(q => edCard(q, d)).join("") + '</div>' + toastHtml();
 }
 
+const TITLES = { home: "Alle Quizze", start: "Quiz starten", board: "Spielbrett", play: "Frage", end: "Ergebnis", edit: "Quiz bearbeiten", tsetup: "Wissenstest", trun: "Wissenstest: Frage", tres: "Wissenstest: Ergebnis" };
+let lastSk = "", lastSig = "", runCounter = 0;
+const FKEYS = ["data-a", "data-id", "data-i", "data-v", "data-c", "data-k", "data-s", "data-f"];
+const HSEL = "h1, h2.question, .boardhead h2";
+function focusSel(el) {
+  if (el.id) return "#" + CSS.escape(el.id);
+  const at = FKEYS.filter(k => el.hasAttribute(k)).map(k => "[" + k + '="' + CSS.escape(el.getAttribute(k)) + '"]').join("");
+  return at ? el.tagName.toLowerCase() + at : null;
+}
+function focusEl(el) {
+  if (!el || el.disabled) return false;
+  el.focus({ preventScroll: true });
+  return document.activeElement === el;
+}
+function focusHeading() {
+  const hd = root.querySelector(HSEL);
+  if (!hd) return false;
+  hd.setAttribute("tabindex", "-1");
+  return focusEl(hd);
+}
 function render() {
   const y = window.scrollY;
   let h;
@@ -570,9 +600,36 @@ function render() {
   else if (S.screen === "tsetup") h = testSetupView();
   else if (S.screen === "trun") h = testRunView();
   else if (S.screen === "tres") h = testResultView();
+  if (S.run && !S.run.n) S.run.n = ++runCounter;
+  const ae = document.activeElement;
+  const prev = (ae && ae !== root && root.contains(ae)) ? { sel: focusSel(ae), s: ae.selectionStart, e: ae.selectionEnd } : null;
   root.innerHTML = h;
-  if (S.screen === "play" && S.cur && S.cur.phase === "reveal") { const b = $("#btnNext"); if (b) b.focus({ preventScroll: true }); }
   window.scrollTo(0, y);
+  document.title = (TITLES[S.screen] || "") + " – " + (CONFIG.siteTitle || "Quizwelt");
+  if (S.loading || $("#dlg").open || $("#login").open) return;
+  const c = S.cur, R = S.run;
+  const sk = S.screen + "|" + (S.quiz ? S.quiz.id : "") + "|" + (S.draft && S.screen === "edit" ? S.draft.id : "") + "|" + (c ? c.q.id + ":" + c.steal + ":" + c.actor : "") + "|" + (R ? R.n + ":" + R.i : "");
+  const sig = sk + "|" + (c ? c.phase + ":" + c.sel + ":" + (c.hint ? 1 : 0) : "") + "|" + (R ? (R.shown ? 1 : 0) : "");
+  const fb = S.fb; S.fb = null;
+  let done = false;
+  if (sig !== lastSig) {
+    if (S.screen === "play" && c && c.phase === "reveal") done = focusEl($("#btnNext"));
+    else if (S.screen === "play" && c && c.phase === "confirm") done = focusEl($("#btnLock"));
+    else if (S.screen === "trun" && R && R.shown) done = focusEl($("#btnTNext"));
+  }
+  if (!done && fb) done = focusEl(document.querySelector(fb));
+  if (!done && sk !== lastSk) done = focusHeading();
+  if (!done && prev && prev.sel) {
+    let el = null; try { el = root.querySelector(prev.sel); } catch (err) { el = null; }
+    if (el && !el.disabled) {
+      el.focus({ preventScroll: true });
+      if (prev.s != null && el.setSelectionRange) { try { el.setSelectionRange(prev.s, prev.e); } catch (err) { /* kein Textfeld */ } }
+      done = true;
+    }
+  }
+  if (!done && prev) focusHeading();
+  if (S.screen === "tsetup" && sk === lastSk) announce(testPool().length + " Fragen verfügbar.");
+  lastSk = sk; lastSig = sig;
 }
 
 /* ---------- Editor-Aktionen ---------- */
@@ -665,7 +722,7 @@ root.addEventListener("click", async (e) => {
     case "rnd": randomQ(); break;
     case "endgame": ask("Spiel jetzt beenden und Ergebnis anzeigen?", [{ label: "Weiterspielen" }, { label: "Beenden", primary: true, fn: () => { S.screen = "end"; render(); window.scrollTo(0, 0); } }]); break;
     case "pick": choose(+t.getAttribute("data-i")); break;
-    case "back": S.cur.sel = null; S.cur.phase = "choose"; render(); break;
+    case "back": S.cur.sel = null; S.cur.phase = "choose"; S.fb = "#ansGroup"; render(); break;
     case "lock": lockIn(); break;
     case "next": nextAfter(); break;
     case "j": joker(t.getAttribute("data-k")); break;
@@ -768,6 +825,8 @@ document.addEventListener("keydown", (e) => {
   if (["a", "b", "c", "d"].includes(k) && !e.ctrlKey && !e.metaKey && !e.altKey) choose(k.charCodeAt(0) - 97);
   else if (k === "enter" && S.cur.phase === "confirm") { e.preventDefault(); lockIn(); }
 });
+
+$("#skip").addEventListener("click", () => { const hd = root.querySelector("h1, h2.question, .boardhead h2"); if (hd) { hd.setAttribute("tabindex", "-1"); hd.focus(); } else root.focus(); });
 
 /* ---------- Start ---------- */
 (async function init() {

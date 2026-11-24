@@ -52,3 +52,14 @@ Dann erscheinen Änderungen sofort für alle, ohne Export. Das Bearbeiten ist du
 | `hash.html` | Erzeugt den Passwort-Hash |
 
 Hinweis: Die Datei muss über `https://` oder `http://localhost` geöffnet werden. Ein Doppelklick auf `index.html` funktioniert nicht, weil Browser Module von `file://` blockieren. Zum lokalen Testen im Ordner `python3 -m http.server` starten.
+
+## 6. Barrierefreiheit
+
+Die App ist für Screenreader (NVDA, JAWS, VoiceOver, TalkBack) und die reine Tastaturbedienung ausgelegt:
+
+* Es gibt einen Link „Zum Inhalt springen“, sinnvolle Überschriften und beschriftete Schaltflächen, Gruppen und Dialoge.
+* Beim Wechsel der Ansicht springt der Fokus auf die Überschrift. Sie nennt bei Fragen Nummer, Kategorie, Stufe, Punkte und das Team am Zug.
+* Nach einer Antwort liegt der Fokus auf „Weiter“. Die Erklärung wird mit vorgelesen (Beschreibung der Schaltfläche).
+* Tipp, 50:50 und Hinweise im Wissenstest werden über einen unsichtbaren Live-Bereich angesagt.
+* Tasten: A bis D wählen eine Antwort, Enter bestätigt bzw. geht weiter.
+* Bewegung wird bei „reduzierte Bewegung“ im Betriebssystem abgeschaltet, die Seite lässt sich vergrößern.
