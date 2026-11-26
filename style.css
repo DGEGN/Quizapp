@@ -298,3 +298,7 @@ h1:focus-visible,h2:focus-visible,.explain:focus-visible,.answers:focus-visible,
 .tmh{margin:0;font:inherit}
 .optlabel{display:inline}
 .ans .vt{margin-left:auto;flex:none;font-family:var(--display);font-weight:800;font-size:15px;line-height:1;border-radius:999px;padding:5px 12px;background:rgba(12,17,70,.85);color:#fff}
+.card.hid{opacity:.72;border-style:dashed}
+.chip.hidchip{background:var(--sun);color:var(--ink)}
+.metagrid label.chk{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.metagrid label.chk input{width:auto}

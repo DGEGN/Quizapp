@@ -63,3 +63,9 @@ Die App ist für Screenreader (NVDA, JAWS, VoiceOver, TalkBack) und die reine Ta
 * Tipp, 50:50 und Hinweise im Wissenstest werden über einen unsichtbaren Live-Bereich angesagt.
 * Tasten: A bis D wählen eine Antwort, Enter bestätigt bzw. geht weiter.
 * Bewegung wird bei „reduzierte Bewegung“ im Betriebssystem abgeschaltet, die Seite lässt sich vergrößern.
+
+## 7. Quizze sichtbar oder unsichtbar machen
+
+Im Bearbeiten-Modus hat jede Karte den Knopf „Unsichtbar machen“ bzw. „Sichtbar machen“. Im Quiz-Editor gibt es dafür den Haken „Quiz ist für Besucher sichtbar“. Unsichtbare Quizze tauchen für Besucher weder auf der Startseite noch im Wissenstest auf. Im JSON steht dafür `"hidden": true`.
+
+Hinweis: Das ist nur ein Ausblenden in der App. Die Daten selbst (Repo oder Datenbank) bleiben öffentlich lesbar und sind kein Geheimnis.

@@ -49,7 +49,7 @@ function normQuiz(x) {
   }
   const qs = (Array.isArray(x.questions) ? x.questions : []).map((q, i) => normQuestion(q, i, cats));
   return { id: String(x.id || uid(x.title)), title: String(x.title || "Neues Quiz"), subtitle: String(x.subtitle || ""),
-    color: COLORS.some(c => c[0] === x.color) ? x.color : COLORS[0][0], sort: +x.sort || 0, categories: cats, levels: lv, questions: qs };
+    color: COLORS.some(c => c[0] === x.color) ? x.color : COLORS[0][0], sort: +x.sort || 0, hidden: x.hidden === true, categories: cats, levels: lv, questions: qs };
 }
 const playable = (q) => nonEmpty(q.q) && nonEmpty(q.o[0]) && q.o.slice(1).filter(nonEmpty).length >= 2;
 
@@ -71,7 +71,8 @@ const root = $("#app");
 let timer = null;
 let toastTimer = null;
 
-function findQuiz(id) { return S.quizzes.find(q => q.id === id) || null; }
+function findQuiz(id) { const q = S.quizzes.find(q => q.id === id) || null; return q && q.hidden && !S.admin ? null : q; }
+const shownQuizzes = () => S.admin ? S.quizzes : S.quizzes.filter(q => !q.hidden);
 function findQ(id) { return S.quiz.questions.find(q => q.id === id) || null; }
 function catName(quiz, id) { const c = quiz.categories.find(x => x.id === id); return c ? c.name : ""; }
 function lvlPts(q) { return S.quiz.levels[q.lvl - 1].points; }
@@ -279,16 +280,17 @@ function homeView() {
     h += '</div>';
     if (S.store.mode === "local") h += '<p class="note" style="text-align:center;margin:6px auto 0;font-size:14px;color:var(--muted);max-width:70ch">Lokaler Modus: Änderungen bleiben in diesem Browser. Mit „Alle Quizze exportieren“ erhältst du die Datei quizzes.json, die du im Repo unter data/ ablegst, damit alle sie sehen.</p>';
   }
-  if (!S.quizzes.length) h += '<div class="empty">Noch kein Quiz vorhanden.' + (S.admin ? " Lege oben ein neues an." : "") + '</div>';
+  const list = shownQuizzes();
+  if (!list.length) h += '<div class="empty">Noch kein Quiz vorhanden.' + (S.admin ? " Lege oben ein neues an." : "") + '</div>';
   else {
     h += '<div class="cards" role="list">';
-    S.quizzes.forEach(q => {
+    list.forEach(q => {
       const np = q.questions.filter(playable).length;
-      h += '<article class="card" role="listitem"><div class="strip" style="background:' + q.color + '"></div><div class="cbody"><h2>' + esc(plainTitle(q.title)) + '</h2>' +
+      h += '<article class="card' + (q.hidden ? " hid" : "") + '" role="listitem"><div class="strip" style="background:' + q.color + '"></div><div class="cbody"><h2>' + esc(plainTitle(q.title)) + '</h2>' +
         (q.subtitle ? '<div class="sub">' + esc(q.subtitle) + '</div>' : '') +
-        '<div class="chips"><span class="chip">' + np + ' Fragen</span><span class="chip">' + q.categories.length + ' Kategorien</span></div></div>' +
+        '<div class="chips"><span class="chip">' + np + ' Fragen</span><span class="chip">' + q.categories.length + ' Kategorien</span>' + (q.hidden ? '<span class="chip hidchip">Unsichtbar für Besucher</span>' : '') + '</div></div>' +
         '<div class="acts"><button class="btn primary sm" data-a="play" data-id="' + esc(q.id) + '" aria-label="Spielen: ' + esc(plainTitle(q.title)) + '">Spielen</button>' +
-        (S.admin ? '<button class="btn sm" data-a="edit" data-id="' + esc(q.id) + '" aria-label="Bearbeiten: ' + esc(plainTitle(q.title)) + '">Bearbeiten</button><button class="btn sm" data-a="dup" data-id="' + esc(q.id) + '" aria-label="Duplizieren: ' + esc(plainTitle(q.title)) + '">Duplizieren</button><button class="btn sm warn" data-a="delquiz" data-id="' + esc(q.id) + '" aria-label="Löschen: ' + esc(plainTitle(q.title)) + '">Löschen</button>' : '') +
+        (S.admin ? '<button class="btn sm" data-a="vis" data-id="' + esc(q.id) + '" aria-label="' + (q.hidden ? "Sichtbar machen: " : "Unsichtbar machen: ") + esc(plainTitle(q.title)) + '">' + (q.hidden ? "Sichtbar machen" : "Unsichtbar machen") + '</button><button class="btn sm" data-a="edit" data-id="' + esc(q.id) + '" aria-label="Bearbeiten: ' + esc(plainTitle(q.title)) + '">Bearbeiten</button><button class="btn sm" data-a="dup" data-id="' + esc(q.id) + '" aria-label="Duplizieren: ' + esc(plainTitle(q.title)) + '">Duplizieren</button><button class="btn sm warn" data-a="delquiz" data-id="' + esc(q.id) + '" aria-label="Löschen: ' + esc(plainTitle(q.title)) + '">Löschen</button>' : '') +
         '</div></article>';
     });
     h += '</div>';
@@ -405,7 +407,7 @@ function weakLoad() { try { return JSON.parse(localStorage.getItem(WEAK_KEY)) ||
 function weakSave(w) { try { localStorage.setItem(WEAK_KEY, JSON.stringify(w)); } catch (e) { /* kein Speicher */ } }
 function testPool(ignoreWeak) {
   const T = S.t, w = weakLoad(), out = [];
-  S.quizzes.forEach(qz => {
+  shownQuizzes().forEach(qz => {
     if (!T.pick[qz.id]) return;
     const ex = T.exc[qz.id] || {};
     qz.questions.forEach(q => {
@@ -418,7 +420,7 @@ function testPool(ignoreWeak) {
 }
 function weakTotal() {
   const w = weakLoad(); let n = 0;
-  S.quizzes.forEach(qz => qz.questions.forEach(q => { if (playable(q) && w[qz.id + ":" + q.id]) n++; }));
+  shownQuizzes().forEach(qz => qz.questions.forEach(q => { if (playable(q) && w[qz.id + ":" + q.id]) n++; }));
   return n;
 }
 function buildRunItems(list) {
@@ -436,7 +438,7 @@ function startTest(list) {
 function testSetupView() {
   const T = S.t, pool = testPool(), all = testPool(true), wt = weakTotal();
   let mods = "";
-  S.quizzes.forEach(qz => {
+  shownQuizzes().forEach(qz => {
     const on = !!T.pick[qz.id], np = qz.questions.filter(playable).length, ex = T.exc[qz.id] || {};
     let cats = "";
     if (on) cats = '<div class="tcats" role="group" aria-label="Kategorien: ' + esc(plainTitle(qz.title)) + '"><h4 class="sr">Kategorien: ' + esc(plainTitle(qz.title)) + '</h4>' + qz.categories.map(c => '<button class="tchip" role="checkbox" data-a="tcat" data-id="' + esc(qz.id) + '" data-c="' + esc(c.id) + '" aria-checked="' + (!ex[c.id]) + '">' + esc(c.name) + '</button>').join("") + '</div>';
@@ -561,7 +563,8 @@ function editView() {
     '<section class="sect"><h2>Quizdaten</h2><div class="metagrid">' +
     '<label class="full">Titel<input type="text" data-s="meta" data-f="title" value="' + esc(d.title) + '"><span class="hintline">Mit | trennst du den Titel in zwei Zeilen. Die zweite Zeile erscheint gelb.</span></label>' +
     '<label>Untertitel<input type="text" data-s="meta" data-f="subtitle" value="' + esc(d.subtitle) + '"></label>' +
-    '<label>Farbe der Karte<select data-s="meta" data-f="color">' + colorOpts + '</select></label></div></section>' +
+    '<label>Farbe der Karte<select data-s="meta" data-f="color">' + colorOpts + '</select></label>' +
+    '<label class="full chk"><input type="checkbox" data-s="meta" data-f="visible"' + (d.hidden ? "" : " checked") + '> Quiz ist für Besucher sichtbar<span class="hintline">Ohne Haken erscheint das Quiz nur im Bearbeiten-Modus (nicht auf der Startseite, nicht im Wissenstest).</span></label></div></section>' +
     '<section class="sect"><h2>Kategorien (Spalten im Spielbrett)</h2>' + cats + (d.categories.length < MAX_CATS ? '<button class="btn sm" data-a="addcat">Kategorie hinzufügen</button>' : '') + '</section>' +
     '<section class="sect"><h2>Stufen und Punkte</h2>' + lvls + '</section>' +
     '<div class="qhead2"><h2>Fragen</h2><span class="spacer"></span><button class="btn sm" data-a="add">Neue Frage</button></div>' +
@@ -646,7 +649,9 @@ function addQuestion() {
 function onEditInput(t, final) {
   const d = S.draft, s = t.getAttribute("data-s");
   if (s === "meta") {
-    const f = t.getAttribute("data-f"); d[f] = t.value; dirty();
+    const f = t.getAttribute("data-f");
+    if (f === "visible") d.hidden = !t.checked; else d[f] = t.value;
+    dirty();
   } else if (s === "cat") {
     d.categories[+t.getAttribute("data-i")].name = t.value; dirty(); if (final) render();
   } else if (s === "lvl") {
@@ -698,7 +703,7 @@ root.addEventListener("click", async (e) => {
     case "world": go("#/"); break;
     case "testsetup": go("#/test"); break;
     case "tq": S.t.pick[id] = !S.t.pick[id]; render(); break;
-    case "tqall": S.quizzes.forEach(q => { S.t.pick[q.id] = true; }); render(); break;
+    case "tqall": shownQuizzes().forEach(q => { S.t.pick[q.id] = true; }); render(); break;
     case "tqnone": S.t.pick = {}; render(); break;
     case "tcat": { const ex = S.t.exc[id] = S.t.exc[id] || {}, c = t.getAttribute("data-c"); if (ex[c]) delete ex[c]; else ex[c] = true; render(); break; }
     case "tlv": { const i = +t.getAttribute("data-v"); S.t.lv[i] = !S.t.lv[i]; if (!S.t.lv.some(Boolean)) S.t.lv[i] = true; render(); break; }
@@ -738,6 +743,13 @@ root.addEventListener("click", async (e) => {
       const src = findQuiz(id); if (!src) break;
       const c = clone(src); c.id = uid(c.title); c.title = c.title + " (Kopie)"; c.sort = Date.now();
       try { await S.store.save(normQuiz(c)); await loadAll(); showToast("Quiz dupliziert."); } catch (err) { showToast("Fehlgeschlagen: " + (err.message || err)); }
+      break;
+    }
+    case "vis": {
+      const src = findQuiz(id); if (!src) break;
+      const c = clone(src); c.hidden = !src.hidden;
+      try { await S.store.save(normQuiz(c)); await loadAll(); showToast(c.hidden ? "Quiz ist jetzt unsichtbar für Besucher." : "Quiz ist jetzt sichtbar."); } catch (err) { showToast("Fehlgeschlagen: " + (err.message || err)); }
+      S.fb = '[data-a="vis"][data-id="' + id + '"]';
       break;
     }
     case "delquiz": {
