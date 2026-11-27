@@ -6,6 +6,8 @@ html{background:#0c0a40}
   --sun:#FFC933;
   --t1:#19C3F5;
   --t2:#FF5CA8;
+  --t3:#35D07F;
+  --t4:#B47CFF;
   --good:#35D07F;
   --bad:#FF5C7A;
   --glass:rgba(255,255,255,.10);
@@ -302,3 +304,17 @@ h1:focus-visible,h2:focus-visible,.explain:focus-visible,.answers:focus-visible,
 .chip.hidchip{background:var(--sun);color:var(--ink)}
 .metagrid label.chk{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 .metagrid label.chk input{width:auto}
+
+/* 3 und 4 Teams */
+.pult.t3{background:linear-gradient(180deg,rgba(53,208,127,.35),rgba(53,208,127,.12));border-color:var(--t3)}
+.pult.t4{background:linear-gradient(180deg,rgba(180,124,255,.35),rgba(180,124,255,.12));border-color:var(--t4)}
+.pod.t3{background:var(--t3)}
+.pod.t4{background:var(--t4)}
+.tile.done.t3{background:var(--t3)}
+.tile.done.t4{background:var(--t4)}
+.rev.t3{border-left-color:var(--t3)}
+.rev.t4{border-left-color:var(--t4)}
+.score.multi{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.score.multi .pod.t2{flex-direction:row;text-align:left}
+.score.multi .pod.t2 .pts{margin-left:auto;margin-right:0}
+.score.multi .pod.t2 .jk{justify-content:flex-start}

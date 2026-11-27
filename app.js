@@ -63,7 +63,7 @@ function newQuiz() {
 const S = {
   store: null, admin: false, quizzes: [], loadErr: "", loading: true,
   screen: "home", quiz: null, draft: null, dirty: false, msg: "", open: {},
-  names: ["Team Blau", "Team Pink"], teamCount: 2, nAns: 3, sound: true,
+  names: ["Team Blau", "Team Pink", "Team Grün", "Team Lila"], teamCount: 2, nAns: 3, sound: true,
   teams: [], turn: 0, done: {}, log: [], cur: null, afterLogin: null, toast: "",
   t: { pick: {}, exc: {}, lv: [true, true, true, true], n: 20, mode: "learn", weak: false }, run: null
 };
@@ -116,7 +116,7 @@ function route() {
   S.cur = null; S.msg = "";
   if (a === "quiz" && b) {
     const q = findQuiz(b);
-    if (q) { S.quiz = q; S.screen = "start"; S.names = ["Team Blau", "Team Pink"]; render(); window.scrollTo(0, 0); return; }
+    if (q) { S.quiz = q; S.screen = "start"; S.names = ["Team Blau", "Team Pink", "Team Grün", "Team Lila"]; render(); window.scrollTo(0, 0); return; }
   }
   if (a === "edit" && b) {
     if (!S.admin) { S.screen = "home"; render(); openLogin(() => nav("#/edit/" + b)); return; }
@@ -202,7 +202,7 @@ function openQ(id) {
   const wrongs = q.o.slice(1).filter(nonEmpty);
   const pick = S.nAns === 3 ? shuffle(wrongs).slice(0, 2) : wrongs.slice(0, 3);
   const opts = shuffle([{ t: q.o[0], ok: true }].concat(pick.map(t => ({ t, ok: false }))));
-  S.cur = { q, opts, actor: S.turn, steal: false, phase: "choose", sel: null, wrong: [], removed: [], hint: null, outcome: null };
+  S.cur = { q, opts, actor: S.turn, steal: false, tried: 0, phase: "choose", sel: null, wrong: [], removed: [], hint: null, outcome: null };
   S.screen = "play"; render(); window.scrollTo(0, 0);
 }
 function randomQ() { const o = openTiles(); if (o.length) openQ(o[Math.floor(Math.random() * o.length)].id); }
@@ -226,7 +226,7 @@ function resolve() {
     c.outcome = { team: c.actor, pts: p, steal: c.steal }; c.phase = "reveal"; tone(SND.ok);
   } else {
     c.wrong.push(c.sel);
-    if (!c.steal && S.teams.length === 2) { c.steal = true; c.actor = 1 - c.actor; c.sel = null; c.phase = "choose"; tone(SND.bad); }
+    if (c.tried < S.teams.length - 1) { c.steal = true; c.tried++; c.actor = (c.actor + 1) % S.teams.length; c.sel = null; c.phase = "choose"; tone(SND.bad); }
     else { c.outcome = { team: -1, pts: 0, steal: c.steal }; c.phase = "reveal"; tone(SND.bad); }
   }
   render();
@@ -249,7 +249,7 @@ function nextAfter() {
   const c = S.cur; if (!c || c.phase !== "reveal") return;
   S.done[c.q.id] = { team: c.outcome.team, pts: c.outcome.pts, steal: c.outcome.steal };
   S.log.push({ id: c.q.id, team: c.outcome.team });
-  if (S.teams.length === 2) S.turn = 1 - S.turn;
+  S.turn = (S.turn + 1) % S.teams.length;
   S.cur = null; S.screen = openTiles().length === 0 ? "end" : "board";
   render(); window.scrollTo(0, 0);
 }
@@ -304,11 +304,9 @@ function startView() {
   const [l1, l2] = titleParts(q.title);
   return topbar() + '<div class="wrap"><div class="heroq"><h1>' + esc(l1) + (l2 ? ' <em>' + esc(l2) + '</em>' : '') + '</h1>' +
     '<p>' + (q.subtitle ? esc(q.subtitle) + ' · ' : '') + np + ' Fragen</p></div>' +
-    '<h2 class="sr">Spieleinstellungen</h2><div class="opts"><span><span class="optlabel" role="heading" aria-level="3">Teams</span><span class="seg" role="group" aria-label="Teams"><button data-a="tc" data-v="2" aria-pressed="' + (S.teamCount === 2) + '">Zwei Teams</button><button data-a="tc" data-v="1" aria-pressed="' + (S.teamCount === 1) + '">Solo</button></span></span>' +
+    '<h2 class="sr">Spieleinstellungen</h2><div class="opts"><span><span class="optlabel" role="heading" aria-level="3">Teams</span><span class="seg" role="group" aria-label="Teams"><button data-a="tc" data-v="1" aria-pressed="' + (S.teamCount === 1) + '">Solo</button><button data-a="tc" data-v="2" aria-pressed="' + (S.teamCount === 2) + '">Zwei Teams</button><button data-a="tc" data-v="3" aria-pressed="' + (S.teamCount === 3) + '">Drei Teams</button><button data-a="tc" data-v="4" aria-pressed="' + (S.teamCount === 4) + '">Vier Teams</button></span></span>' +
     '<span><span class="optlabel" role="heading" aria-level="3">Antworten pro Frage</span><span class="seg" role="group" aria-label="Antworten pro Frage"><button data-a="na" data-v="3" aria-pressed="' + (S.nAns === 3) + '">3 pro Frage</button><button data-a="na" data-v="4" aria-pressed="' + (S.nAns === 4) + '">4 pro Frage</button></span></span></div>' +
-    '<div class="setup" style="' + (S.teamCount === 1 ? "grid-template-columns:1fr" : "") + '">' +
-    '<div class="pult t1"><label for="nm0">Name Team 1</label><input id="nm0" data-a="name" data-v="0" type="text" maxlength="24" value="' + esc(S.names[0]) + '"></div>' +
-    (S.teamCount === 2 ? '<div class="pult t2"><label for="nm1">Name Team 2</label><input id="nm1" data-a="name" data-v="1" type="text" maxlength="24" value="' + esc(S.names[1]) + '"></div>' : '') + '</div>' +
+    '<div class="setup" style="' + (S.teamCount === 1 ? "grid-template-columns:1fr" : "") + '">' + [0, 1, 2, 3].slice(0, S.teamCount).map(i => '<div class="pult t' + (i + 1) + '"><label for="nm' + i + '">Name Team ' + (i + 1) + '</label><input id="nm' + i + '" data-a="name" data-v="' + i + '" type="text" maxlength="24" value="' + esc(S.names[i]) + '"></div>').join("") + '</div>' +
     '<div class="cta"><button class="btn primary big" id="btnStart" data-a="start"' + (np ? "" : " disabled") + '>Spiel starten</button>' +
     (S.admin ? '<button class="btn big" data-a="edit" data-id="' + esc(q.id) + '">Quiz bearbeiten</button>' : '') +
     '<button class="btn big" data-a="world">Alle Quizze</button></div></div>';
@@ -316,7 +314,7 @@ function startView() {
 
 /* ---------- Ansichten: Spiel ---------- */
 function scoreView() {
-  let h = '<h2 class="sr">Punktestand</h2><div class="score' + (S.teams.length === 1 ? " solo" : "") + '" role="group" aria-label="Punktestand">';
+  let h = '<h2 class="sr">Punktestand</h2><div class="score' + (S.teams.length === 1 ? " solo" : "") + (S.teams.length > 2 ? " multi" : "") + '" role="group" aria-label="Punktestand">';
   const active = S.cur ? S.cur.actor : S.turn;
   S.teams.forEach((t, i) => {
     const on = S.teams.length > 1 && i === active && S.screen !== "end";
@@ -345,7 +343,7 @@ function boardView() {
   });
   const t = S.teams[S.turn], left = openTiles().length, total = qz.questions.filter(playable).length;
   return topbar() + '<div class="wrap">' + scoreView() +
-    '<div class="boardhead"><h2>' + (S.teams.length === 2 ? esc(t.name) + ', wählt eine Frage' : 'Wähle eine Frage') + '</h2><span class="info">' + left + ' von ' + total + ' Fragen offen</span><span style="flex:1"></span>' +
+    '<div class="boardhead"><h2>' + (S.teams.length >= 2 ? esc(t.name) + ', wählt eine Frage' : 'Wähle eine Frage') + '</h2><span class="info">' + left + ' von ' + total + ' Fragen offen</span><span style="flex:1"></span>' +
     '<button class="btn sm" data-a="rnd">Zufällige Frage</button><button class="btn sm warn" data-a="endgame">Spiel beenden</button></div>' +
     '<div class="board"' + (qz.categories.length >= 7 ? ' data-d="x"' : qz.categories.length >= 5 ? ' data-d="d"' : '') + ' style="--cols:' + qz.categories.length + '">' + cols + '</div></div>';
 }
@@ -367,7 +365,7 @@ function playView() {
   if (c.phase === "confirm") aux += '<div class="confirm" role="group" aria-label="Bestätigung"><strong id="cfTxt">' + esc(actorTeam().name) + ': Ist ' + LETTERS[c.sel] + ' eure endgültige Antwort?</strong><button class="btn" data-a="back">Andere wählen</button><button class="btn primary" id="btnLock" data-a="lock" aria-describedby="cfTxt">Endgültig</button></div>';
   if (c.phase === "reveal") {
     const o = c.outcome, good = o.team > -1, right = c.opts.find(x => x.ok).t;
-    const head = good ? (S.teams.length === 2 ? esc(S.teams[o.team].name) + " holt " + fmt(o.pts) + " Punkte" + (o.steal ? " (geklaut)" : "") : "Richtig! +" + fmt(o.pts)) : "Leider nicht gelöst";
+    const head = good ? (S.teams.length >= 2 ? esc(S.teams[o.team].name) + " holt " + fmt(o.pts) + " Punkte" + (o.steal ? " (geklaut)" : "") : "Richtig! +" + fmt(o.pts)) : "Leider nicht gelöst";
     aux += '<h3 class="sr">Auswertung</h3><div class="explain ' + (good ? "" : "fail") + '" id="explTxt" tabindex="-1"><div class="verdict">' + head + sr(". Stand: " + standText()) + '</div>' + (good ? "" : '<p><strong>Richtig wäre gewesen:</strong> ' + esc(right) + '</p>') +
       (q.why ? '<p>' + esc(q.why) + '</p>' : '') + (q.check ? '<span class="tag">Unterlage prüfen</span>' : '') +
       '</div><div class="explnext"><button class="btn primary" id="btnNext" data-a="next">Zurück zum Spielbrett</button></div>';
@@ -379,15 +377,17 @@ function playView() {
   const stealMsg = (c.steal && c.phase !== "reveal") ? '<div class="steal">Klau-Chance für ' + esc(actorTeam().name) + ': nur halbe Punkte (' + fmt(curPts()) + '), die falsche Antwort ist raus.</div>' : "";
   return topbar() + '<div class="wrap">' + scoreView() +
     '<div class="qhead"><span class="chip">' + esc(catName(qz, q.cat)) + '</span><span class="chip">Frage ' + q.id + ' · ' + esc(qz.levels[q.lvl - 1].name) + '</span><span class="prize">' + fmt(curPts()) + ' Punkte</span></div>' +
-    stealMsg + '<h2 class="question" tabindex="-1">' + sr("Frage " + q.id + ", " + catName(qz, q.cat) + ", " + qz.levels[q.lvl - 1].name + ", " + fmt(curPts()) + " Punkte. " + (S.teams.length === 2 ? actorTeam().name + " antwortet" + (c.steal ? ", Klau-Chance mit halben Punkten, die falsche Antwort ist raus" : "") + ". " : "")) + esc(q.q) + '</h2><h3 class="sr">Antworten</h3><div class="answers" id="ansGroup" role="group" aria-label="Antworten" tabindex="-1">' + ans + '</div><div class="aux">' + aux + '</div>' + tools + '</div>';
+    stealMsg + '<h2 class="question" tabindex="-1">' + sr("Frage " + q.id + ", " + catName(qz, q.cat) + ", " + qz.levels[q.lvl - 1].name + ", " + fmt(curPts()) + " Punkte. " + (S.teams.length >= 2 ? actorTeam().name + " antwortet" + (c.steal ? ", Klau-Chance mit halben Punkten, die falsche Antwort ist raus" : "") + ". " : "")) + esc(q.q) + '</h2><h3 class="sr">Antworten</h3><div class="answers" id="ansGroup" role="group" aria-label="Antworten" tabindex="-1">' + ans + '</div><div class="aux">' + aux + '</div>' + tools + '</div>';
 }
 function endView() {
   let title, sub = "";
   if (S.teams.length === 1) { title = "Geschafft!"; sub = fmt(S.teams[0].score) + " Punkte für " + esc(S.teams[0].name); }
   else {
-    const a = S.teams[0], b = S.teams[1];
-    if (a.score === b.score) { title = "Unentschieden!"; sub = fmt(a.score) + " zu " + fmt(b.score); }
-    else { const w = a.score > b.score ? a : b; title = esc(w.name) + " gewinnt!"; sub = fmt(a.score) + " zu " + fmt(b.score) + " Punkte"; }
+    const max = Math.max.apply(null, S.teams.map(t => t.score)), win = S.teams.filter(t => t.score === max);
+    sub = S.teams.length === 2 ? fmt(S.teams[0].score) + " zu " + fmt(S.teams[1].score) + " Punkte" : S.teams.map(t => esc(t.name) + " " + fmt(t.score)).join(" · ") + " Punkte";
+    if (win.length === S.teams.length) title = "Unentschieden!";
+    else if (win.length > 1) title = "Gleichstand an der Spitze: " + win.map(t => esc(t.name)).join(" und ") + "!";
+    else title = esc(win[0].name) + " gewinnt!";
   }
   let list = "";
   S.log.forEach(l => {

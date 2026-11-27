@@ -69,3 +69,7 @@ Die App ist für Screenreader (NVDA, JAWS, VoiceOver, TalkBack) und die reine Ta
 Im Bearbeiten-Modus hat jede Karte den Knopf „Unsichtbar machen“ bzw. „Sichtbar machen“. Im Quiz-Editor gibt es dafür den Haken „Quiz ist für Besucher sichtbar“. Unsichtbare Quizze tauchen für Besucher weder auf der Startseite noch im Wissenstest auf. Im JSON steht dafür `"hidden": true`.
 
 Hinweis: Das ist nur ein Ausblenden in der App. Die Daten selbst (Repo oder Datenbank) bleiben öffentlich lesbar und sind kein Geheimnis.
+
+## 8. Bis zu vier Teams
+
+Beim Spielstart kannst du Solo, zwei, drei oder vier Teams wählen. Bei einer falschen Antwort bekommt das nächste Team in der Reihenfolge eine Klau-Chance (halbe Punkte, die falsche Antwort ist raus). Danach folgen die weiteren Teams, bis jemand richtig liegt oder alle es versucht haben. Die Reihenfolge der Fragen wechselt reihum. Bei Gleichstand an der Spitze gibt es kein einzelnes Siegerteam.
